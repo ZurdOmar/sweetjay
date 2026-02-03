@@ -7,7 +7,7 @@ export default {
     extend: {
       colors: {
         neon: {
-          green: '#39ff14',
+          pink: '#ff007f',
           blue: '#00f3ff',
           purple: '#bc13fe',
         },
