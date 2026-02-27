@@ -35,9 +35,9 @@ function App() {
           <div className="flex items-center justify-between h-24">
             <div className="flex-shrink-0">
               <img
-                src="/images/logo.png"
-                alt="Sweetjay Logo"
-                className="h-20 w-auto object-contain cursor-pointer hover:drop-shadow-[0_0_10px_rgba(255,0,127,0.5)] transition-all"
+                src="/images/sweetj-2.png"
+                alt="Sweet J Logo"
+                className="h-20 w-auto object-contain cursor-pointer hover:drop-shadow-[0_0_15px_rgba(255,0,127,0.6)] transition-all"
               />
             </div>
 
@@ -167,8 +167,8 @@ function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               { title: 'HOODIE', year: '2025', image: '/images/slide1.png' },
-              { title: 'El Don', year: '2024', image: '/images/slide2.png' },
-              { title: 'Tu Foto', year: '2024', image: '/images/slide3.png' }
+              { title: 'EN MOVIMIENTO', year: '2024', image: '/images/slide2.png' },
+              { title: 'EL DON', year: '2024', image: '/images/slide3.png' }
             ].map((song, index) => (
               <motion.div
                 key={index}
@@ -269,17 +269,30 @@ function App() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <img src="/images/logo.png" alt="Sweetjay" className="w-64 h-auto mb-6" />
+              <img src="/images/sweetj-2.png" alt="Sweet J" className="w-64 h-auto mb-6" />
               <h3 className="text-xl text-white font-bold mb-6 uppercase tracking-wider">Desde Colima Para El Mundo</h3>
               <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                Directo desde la misteriosa belleza de Colima, envuelta entre playas y volcanes.
-                Sweetjay trae una propuesta fresca al género urbano, fusionando ritmos latinos con
-                letras que narran la realidad y los sueños de una generación.
+                Originario de Colima, con 25 años de edad, SweetJ es un apasionado de la música y la expresión artística.
+                Debuta en octubre de 2023 con su EP "MY ESSENCE", marcando el inicio de una carrera enfocada en
+                expresar sentimientos a través de melodías urbanas frescas.
               </p>
-              <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                "Repartimos mucho flow con música". Con lanzamientos recientes como "HOODIE" y "El Don",
-                está marcando su territorio en la escena musical emergente.
-              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                  <h4 className="text-neon-pink font-bold text-sm mb-2 uppercase">Highlights</h4>
+                  <ul className="text-gray-400 text-sm space-y-2">
+                    <li>• Colaboración "Dos Locos" - Grupo Cañaveral</li>
+                    <li>• Ranking Top #10 Radio 91.7</li>
+                    <li>• Miembro fundador de Flow312</li>
+                    <li>• Especial con Armando Gómez (Latin Grammy)</li>
+                  </ul>
+                </div>
+                <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                  <h4 className="text-neon-pink font-bold text-sm mb-2 uppercase">Proyectos</h4>
+                  <p className="text-gray-400 text-sm">
+                    Gestor activo del talento local colimense y organizador de eventos urbanos masivos.
+                  </p>
+                </div>
+              </div>
 
               <div className="flex gap-4">
                 <a href="https://www.instagram.com/s.weet.jay/" target="_blank" rel="noreferrer" className="p-3 bg-white/5 rounded-full hover:bg-neon-pink hover:text-black transition-colors">

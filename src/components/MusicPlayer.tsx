@@ -58,7 +58,7 @@ export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-black/80 backdrop-blur-md border border-neon-pink/30 p-2 rounded-full shadow-[0_0_15px_rgba(255,0,127,0.2)]">
             <audio
                 ref={audioRef}
-                src="/music/tu_foto.mp3"
+                src="/music/ElDon.mp3"
                 loop
                 preload="auto"
                 playsInline
@@ -81,8 +81,8 @@ export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
 
             <div className="hidden md:flex items-center gap-2 px-2">
                 <div className="flex flex-col">
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">Tu Foto</span>
-                    <span className="text-[10px] text-gray-400">SweetJay</span>
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">El Don</span>
+                    <span className="text-[10px] text-gray-400">SweetJ</span>
                 </div>
                 <button onClick={toggleMute} className="ml-2 text-white hover:text-neon-pink transition-colors">
                     {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
