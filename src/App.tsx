@@ -35,7 +35,7 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
             {/* Desktop Menu */}
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-8">
-                {['Inicio', 'Música', 'Eventos', 'Bio', 'Contacto'].map((item) => (
+                {['Inicio', 'Música', 'Eventos', 'Videos', 'Galería', 'Bio', 'Contacto'].map((item) => (
                   <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} className="hover:text-neon-pink transition-colors px-3 py-2 rounded-md text-sm font-medium uppercase tracking-wider">
                     {item}
                   </a>
@@ -62,7 +62,7 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
               className="md:hidden bg-black border-b border-white/10"
             >
               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                {['Inicio', 'Música', 'Videos', 'Bio', 'Contacto'].map((item) => (
+                {['Inicio', 'Música', 'Eventos', 'Videos', 'Galería', 'Bio', 'Contacto'].map((item) => (
                   <a
                     key={item}
                     href={`#${item.toLowerCase()}`}
@@ -267,6 +267,50 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
                 Suscribirse en YouTube
               </a>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery Section */}
+      <section id="galería" className="py-24 bg-dark-card border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase">GALERÍA</h2>
+            <div className="w-24 h-1 bg-neon-pink mx-auto"></div>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[
+              '/images/extracted/img_0_0.png',
+              '/images/extracted/img_4_0.png',
+              '/images/extracted/img_16_0.png',
+              '/images/extracted/img_2_2.png',
+              '/images/extracted/img_6_2.png',
+              '/images/extracted/img_8_4.png',
+              '/images/extracted/img_13_9.png',
+              '/images/extracted/img_18_2.png',
+            ].map((img, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.05 }}
+                className="aspect-square relative group overflow-hidden rounded-xl bg-gray-900 border border-white/5"
+              >
+                <img
+                  src={img}
+                  alt={`Sweetjay Gallery ${index + 1}`}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-neon-pink/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>

@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const CAROUSEL_IMAGES = [
-    '/images/carousel/photo1.jpg',
-    '/images/carousel/photo2.jpg',
-    '/images/carousel/photo3.jpg',
-    '/images/carousel/photo4.jpg',
-    '/images/carousel/photo5.jpg',
+    '/images/extracted/img_8_4.png',
+    '/images/extracted/img_6_2.png',
+    '/images/extracted/img_13_9.png',
+    '/images/extracted/img_18_2.png',
+    '/images/extracted/img_19_3.png',
 ];
 
 export function HeroCarousel() {
