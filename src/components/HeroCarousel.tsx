@@ -1,55 +1,90 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const CAROUSEL_IMAGES = [
-    '/images/extracted/img_8_4.png',
-    '/images/extracted/img_6_2.png',
-    '/images/extracted/img_13_9.png',
-    '/images/extracted/img_18_2.png',
-    '/images/extracted/img_19_3.png',
-];
+import { db } from '../firebase';
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 
 export function HeroCarousel() {
+    const [images, setImages] = useState<string[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % CAROUSEL_IMAGES.length);
-        }, 4000);
+        const fetchImages = async () => {
+            try {
+                const q = query(collection(db, 'carousel'), orderBy('createdAt', 'desc'), limit(5));
+                const querySnapshot = await getDocs(q);
+                const fetchedImages = querySnapshot.docs.map(doc => doc.data().url);
 
-        return () => clearInterval(timer);
+                if (fetchedImages.length > 0) {
+                    setImages(fetchedImages);
+                } else {
+                    // Fallback to static images if no images in Firebase
+                    setImages([
+                        '/images/slide1.png',
+                        '/images/slide2.png',
+                        '/images/slide3.png'
+                    ]);
+                }
+            } catch (error) {
+                console.error("Error fetching carousel images:", error);
+                // Fallback
+                setImages([
+                    '/images/slide1.png',
+                    '/images/slide2.png',
+                    '/images/slide3.png'
+                ]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchImages();
     }, []);
 
-    return (
-        <div className="relative w-full max-w-3xl mx-auto aspect-[4/5] md:aspect-square overflow-hidden shadow-2xl rounded-lg">
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10 pointer-events-none" />
+    useEffect(() => {
+        if (images.length === 0) return;
+        const timer = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % images.length);
+        }, 4000);
+        return () => clearInterval(timer);
+    }, [images]);
 
-            <AnimatePresence mode="wait">
-                <motion.div
+    if (loading || images.length === 0) {
+        return (
+            <div className="w-full max-w-lg aspect-square relative rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(57,255,20,0.3)] border border-neon-green/30 bg-black/50 flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-neon-green border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="w-full max-w-lg aspect-square relative rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(57,255,20,0.3)] border border-neon-green/30">
+            <AnimatePresence mode='wait'>
+                <motion.img
                     key={currentIndex}
-                    className="absolute inset-0"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1, transition: { duration: 0.8 } }}
-                    exit={{ opacity: 0, transition: { duration: 0.8 } }}
-                >
-                    {/* Main Image - Now using object-cover to fill space */}
-                    <img
-                        src={CAROUSEL_IMAGES[currentIndex]}
-                        alt={`Sweetjay Photo ${currentIndex + 1}`}
-                        className="w-full h-full object-cover"
-                    />
-                </motion.div>
+                    src={images[currentIndex]}
+                    alt={`Sweetjay Moment ${currentIndex + 1}`}
+                    initial={{ opacity: 0, scale: 1.1 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.2 }}
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
             </AnimatePresence>
 
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-                {CAROUSEL_IMAGES.map((_, idx) => (
+            {/* Overlay Gradient for better integration */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
+
+            {/* Indicators */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                {images.map((_, idx) => (
                     <div
                         key={idx}
-                        className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === currentIndex ? 'bg-neon-green w-6' : 'bg-white/30'
-                            }`}
-                    />
+                        className={`w-2 h-2 rounded-full transition-all duration-500 ${idx === currentIndex ? 'bg-neon-green w-6' : 'bg-white/50'}`}
+                    ></div>
                 ))}
             </div>
         </div>
     );
 }
+

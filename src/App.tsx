@@ -8,7 +8,7 @@ import type { MusicPlayerHandle } from './components/MusicPlayer';
 import { Intro } from './components/Intro';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Admin } from './components/Admin';
-import { Music as DiscIcon, Star, MapPin } from 'lucide-react';
+import { Music as DiscIcon, Star, MapPin, Megaphone } from 'lucide-react';
 import { db } from './firebase';
 import { collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
 
@@ -24,6 +24,12 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
   const [firebaseVideos, setFirebaseVideos] = useState<any[]>([]);
   const [firebaseEvents, setFirebaseEvents] = useState<any[]>([]);
+  const [firebaseEventsInfo, setFirebaseEventsInfo] = useState<any>({ title: 'Tour 2025', description: 'Prepárate para vivir la experiencia de Sweetjay en vivo. Nuevas fechas, nuevos shows y toda la energía del género urbano.', footer: 'Próximamente más fechas...' });
+  const [firebaseBioInfo, setFirebaseBioInfo] = useState<any>({
+    title: 'Originario de Colima, 27 años',
+    content: 'Sweetjay es un apasionado de la música y la expresión artística desde temprana edad...',
+    highlights: []
+  });
   const [firebaseMusic, setFirebaseMusic] = useState<any[]>([]);
   const [firebaseAds, setFirebaseAds] = useState<any[]>([]);
   const [showAd, setShowAd] = useState(true);
@@ -55,6 +61,18 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
         const adsQ = query(collection(db, 'ads'), orderBy('createdAt', 'desc'), limit(1));
         const adsSnapshot = await getDocs(adsQ);
         setFirebaseAds(adsSnapshot.docs.map(doc => doc.data()));
+
+        // Fetch Events Info
+        const eventsInfoSnapshot = await getDocs(query(collection(db, 'settings')));
+        const info = eventsInfoSnapshot.docs.find(d => d.id === 'eventsInfo');
+        if (info) {
+          setFirebaseEventsInfo(info.data());
+        }
+
+        const bInfo = eventsInfoSnapshot.docs.find(d => d.id === 'bioInfo');
+        if (bInfo) {
+          setFirebaseBioInfo(bInfo.data());
+        }
       } catch (error) {
         console.error("Error fetching dynamic data:", error);
       }
@@ -315,15 +333,15 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
               </motion.div>
             )}
             <div className="space-y-8">
-              <div className="bg-white/5 p-8 rounded-2xl border-l-4 border-neon-pink">
+              <div className="bg-white/5 p-8 rounded-2xl border-l-4 border-neon-pink shadow-lg shadow-neon-pink/10">
                 <span className="text-neon-pink font-bold uppercase tracking-widest text-sm block mb-2">Destacado</span>
-                <h3 className="text-3xl font-bold mb-4">Tour 2025</h3>
+                <h3 className="text-3xl font-bold mb-4">{firebaseEventsInfo.title}</h3>
                 <p className="text-gray-300 text-lg mb-6">
-                  Prepárate para vivir la experiencia de Sweetjay en vivo. Nuevas fechas, nuevos shows y toda la energía del género urbano.
+                  {firebaseEventsInfo.description}
                 </p>
                 <div className="flex items-center gap-3 text-gray-400">
                   <MapPin size={20} className="text-neon-pink" />
-                  <span>Próximamente más fechas...</span>
+                  <span>{firebaseEventsInfo.footer}</span>
                 </div>
               </div>
             </div>
@@ -488,36 +506,55 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
               viewport={{ once: true }}
             >
               <img src="/images/sweetj-2.png?v=2" alt="Sweet J" className="w-64 h-auto mb-6" />
-              <h3 className="text-xl text-white font-bold mb-6 uppercase tracking-wider">Originario de Colima, 27 años</h3>
-              <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                Sweetjay es un apasionado de la música y la expresión artística desde temprana edad.
-                Inspirado por la necesidad de expresar sus sentimientos a través de melodías.
-                Debuta con un EP **“MY ESSENCE”** producido por Yacknees en octubre del 2023.
-              </p>
-              <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                Miembro activo de **Flow312**, plataforma dedicada a promover el talento urbano colimense.
-                Ha participado en ediciones exitosas de festivales urbanos y eventos locales de trap.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                <div className="bg-white/5 p-4 rounded-xl border border-white/5">
-                  <h4 className="text-neon-pink font-bold text-sm mb-2 uppercase flex items-center gap-2">
-                    <Star size={16} /> Logros
-                  </h4>
-                  <ul className="text-gray-400 text-xs space-y-2">
-                    <li>• Composición "Dos Locos" - Grupo Cañaveral (2019)</li>
-                    <li>• Colaboración con Armando Gómez (Latin Grammy)</li>
-                    <li>• Ranking Top #10 Radio 91.7 (2024)</li>
-                    <li>• Participación en "Colimán" con Antiwa</li>
-                  </ul>
-                </div>
-                <div className="bg-white/5 p-4 rounded-xl border border-white/5">
-                  <h4 className="text-neon-pink font-bold text-sm mb-2 uppercase flex items-center gap-2">
-                    < DiscIcon size={16} /> Impacto
-                  </h4>
-                  <p className="text-gray-400 text-xs">
-                    Difusión de artistas locales y organización de eventos como Elixir vol1/vol2 y Flow312 Forum DMT.
+              <h3 className="text-xl text-white font-bold mb-6 uppercase tracking-wider">{firebaseBioInfo.title}</h3>
+              <div className="space-y-6 mb-8">
+                {firebaseBioInfo.content.split('\n').filter((p: string) => p.trim()).map((paragraph: string, idx: number) => (
+                  <p key={idx} className="text-gray-300 text-lg leading-relaxed">
+                    {paragraph.includes('**') ? (
+                      paragraph.split('**').map((text: string, i: number) =>
+                        i % 2 === 1 ? <strong key={i} className="text-white">{text}</strong> : text
+                      )
+                    ) : paragraph}
                   </p>
-                </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                {firebaseBioInfo.highlights && firebaseBioInfo.highlights.length > 0 ? (
+                  firebaseBioInfo.highlights.map((item: any, idx: number) => (
+                    <div key={idx} className="bg-white/5 p-4 rounded-xl border border-white/5">
+                      <h4 className="text-neon-pink font-bold text-sm mb-2 uppercase flex items-center gap-2">
+                        {item.iconType === 'disc' ? <DiscIcon size={16} /> : item.iconType === 'megaphone' ? <Megaphone size={16} /> : <Star size={16} />}
+                        {item.title}
+                      </h4>
+                      <pre className="text-gray-400 text-xs whitespace-pre-wrap font-sans leading-relaxed">
+                        {item.content}
+                      </pre>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                      <h4 className="text-neon-pink font-bold text-sm mb-2 uppercase flex items-center gap-2">
+                        <Star size={16} /> Logros
+                      </h4>
+                      <ul className="text-gray-400 text-xs space-y-2">
+                        <li>• Composición "Dos Locos" - Grupo Cañaveral (2019)</li>
+                        <li>• Colaboración con Armando Gómez (Latin Grammy)</li>
+                        <li>• Ranking Top #10 Radio 91.7 (2024)</li>
+                        <li>• Participación en "Colimán" con Antiwa</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                      <h4 className="text-neon-pink font-bold text-sm mb-2 uppercase flex items-center gap-2">
+                        <DiscIcon size={16} /> Impacto
+                      </h4>
+                      <p className="text-gray-400 text-xs">
+                        Difusión de artistas locales y organización de eventos como Elixir vol1/vol2 y Flow312 Forum DMT.
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="flex gap-4">
