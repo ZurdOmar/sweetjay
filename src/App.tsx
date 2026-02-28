@@ -246,14 +246,14 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
             <div className="aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
               <iframe
                 className="w-full h-full"
-                src="https://www.youtube.com/embed/videoseries?list=UU7-K-p6-4X8b-bX-P-X-U-A"
-                title="YouTube video player"
+                src="https://www.youtube.com/embed/2TegPQpWJns"
+                title="Sweetjay - HOODIE (Official Video)"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               ></iframe>
             </div>
             <div className="flex flex-col justify-center">
-              <h3 className="text-2xl font-bold mb-4 text-neon-pink uppercase">Visuals & Estética</h3>
+              <h3 className="text-2xl font-bold mb-4 text-neon-pink uppercase">HOODIE - Video Oficial</h3>
               <p className="text-gray-300 text-lg mb-6">
                 Descubre el universo visual de Sweetjay. Cada video es una pieza que complementa el ritmo y la lírica,
                 llevando la experiencia musical a otro nivel sensorial.
@@ -341,7 +341,7 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
               viewport={{ once: true }}
             >
               <img src="/images/sweetj-2.png?v=2" alt="Sweet J" className="w-64 h-auto mb-6" />
-              <h3 className="text-xl text-white font-bold mb-6 uppercase tracking-wider">Originario de Colima, 25 años</h3>
+              <h3 className="text-xl text-white font-bold mb-6 uppercase tracking-wider">Originario de Colima, 27 años</h3>
               <p className="text-gray-300 text-lg leading-relaxed mb-6">
                 Sweetjay es un apasionado de la música y la expresión artística desde temprana edad.
                 Inspirado por la necesidad de expresar sus sentimientos a través de melodías.
@@ -450,7 +450,7 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
             className="h-12 w-auto animate-pulse brightness-110"
           />
         </div>
-        <p className="text-gray-500">© 2026 Sweetjay Music. Todos los derechos reservados.</p>
+        <p className="text-gray-500">© 2026 Sweetjay Music v2.3. Todos los derechos reservados.</p>
         <div className="mt-4 flex justify-center gap-6 opacity-50">
           <Instagram size={20} className="hover:text-neon-pink transition-colors cursor-pointer" />
           <Youtube size={20} className="hover:text-neon-pink transition-colors cursor-pointer" />

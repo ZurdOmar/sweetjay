@@ -4,12 +4,12 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-    projectId: "sweetjay-official",
-    appId: "1:254468019294:web:3809122e018adefbce10cf",
-    storageBucket: "sweetjay-official.firebasestorage.app",
-    apiKey: "AIzaSyDam-KSyLftjH4rwes-9FIhSGs09tALZrc",
-    authDomain: "sweetjay-official.firebaseapp.com",
-    messagingSenderId: "254468019294"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 const app = initializeApp(firebaseConfig);

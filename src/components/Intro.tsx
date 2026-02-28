@@ -19,7 +19,7 @@ export function Intro({ onEnter }: IntroProps) {
                 className="mb-12"
             >
                 <img
-                    src="/images/sweetj-2.png?v=2"
+                    src="/images/sweetj-2.png?v=2.2"
                     alt="Sweet J Logo"
                     className="w-72 md:w-[450px] h-auto object-contain drop-shadow-[0_0_35px_rgba(255,0,127,0.4)]"
                 />

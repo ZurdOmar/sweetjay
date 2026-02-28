@@ -58,7 +58,7 @@ export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-black/80 backdrop-blur-md border border-neon-pink/30 p-2 rounded-full shadow-[0_0_15px_rgba(255,0,127,0.2)]">
             <audio
                 ref={audioRef}
-                src="/music/ElDon.mp3?v=2"
+                src="/music/ElDon.mp3?v=2.2"
                 loop
                 preload="auto"
                 playsInline
