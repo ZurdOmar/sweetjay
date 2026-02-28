@@ -3,7 +3,7 @@ import { auth, storage, db } from '../firebase';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc } from 'firebase/firestore';
-import { LogIn, LogOut, Upload, Image as ImageIcon, Music as MusicIcon, Calendar, CheckCircle2 } from 'lucide-react';
+import { LogIn, LogOut, Upload, Image as ImageIcon, Music as MusicIcon, Calendar, CheckCircle2, Youtube, Megaphone } from 'lucide-react';
 
 export const Admin = () => {
     const [user, setUser] = useState<any>(null);
@@ -13,9 +13,10 @@ export const Admin = () => {
     const [uploading, setUploading] = useState(false);
     const [progress, setProgress] = useState(0);
     const [message, setMessage] = useState('');
+    const [youtubeLink, setYoutubeLink] = useState('');
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser: any) => {
             setUser(currentUser);
         });
         return () => unsubscribe();
@@ -35,6 +36,23 @@ export const Admin = () => {
 
     const handleLogout = () => signOut(auth);
 
+    const handleAddYoutubeLink = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!youtubeLink) return;
+        setUploading(true);
+        try {
+            await addDoc(collection(db, 'videos'), {
+                url: youtubeLink,
+                createdAt: new Date().toISOString()
+            });
+            setMessage('¡Enlace de YouTube guardado con éxito!');
+            setYoutubeLink('');
+        } catch (error: any) {
+            setMessage('Error al guardar: ' + error.message);
+        }
+        setUploading(false);
+    };
+
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, folder: string) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -44,11 +62,11 @@ export const Admin = () => {
         const uploadTask = uploadBytesResumable(storageRef, file);
 
         uploadTask.on('state_changed',
-            (snapshot) => {
+            (snapshot: any) => {
                 const p = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 setProgress(p);
             },
-            (error) => {
+            (error: any) => {
                 setMessage('Error al subir: ' + error.message);
                 setUploading(false);
             },
@@ -145,6 +163,41 @@ export const Admin = () => {
                         <label className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg cursor-pointer transition-colors border border-white/10 w-full">
                             <Upload size={16} className="inline mr-2" /> Subir Flyer
                             <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'events')} />
+                        </label>
+                    </div>
+
+                    {/* Videos Management (YouTube Links) */}
+                    <div className="bg-dark-card p-6 rounded-2xl border border-white/10 flex flex-col items-center text-center">
+                        <Youtube size={48} className="text-neon-pink mb-4" />
+                        <h3 className="font-bold mb-2">Videos (YouTube)</h3>
+                        <p className="text-sm text-gray-400 mb-6">Pega el enlace de tus videos.</p>
+                        <form onSubmit={handleAddYoutubeLink} className="w-full flex flex-col gap-2">
+                            <input
+                                type="url"
+                                placeholder="https://youtube.com/watch?v=..."
+                                value={youtubeLink}
+                                onChange={(e) => setYoutubeLink(e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-neon-pink outline-none"
+                                required
+                            />
+                            <button
+                                type="submit"
+                                disabled={uploading || !youtubeLink}
+                                className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg cursor-pointer transition-colors border border-white/10 w-full flex items-center justify-center disabled:opacity-50"
+                            >
+                                <Upload size={16} className="inline mr-2" /> Guardar Enlace
+                            </button>
+                        </form>
+                    </div>
+
+                    {/* Announcements / Ads */}
+                    <div className="bg-dark-card p-6 rounded-2xl border border-white/10 flex flex-col items-center text-center">
+                        <Megaphone size={48} className="text-neon-pink mb-4" />
+                        <h3 className="font-bold mb-2">Anuncios / Banners</h3>
+                        <p className="text-sm text-gray-400 mb-6">Sube banners publicitarios promocionales.</p>
+                        <label className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg cursor-pointer transition-colors border border-white/10 w-full">
+                            <Upload size={16} className="inline mr-2" /> Subir Anuncio
+                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'ads')} />
                         </label>
                     </div>
                 </div>

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import type { FormEvent } from 'react';
 import { Instagram, Youtube, Music, Menu, X, Mail } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HeroCarousel } from './components/HeroCarousel';
@@ -8,11 +9,38 @@ import { Intro } from './components/Intro';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Admin } from './components/Admin';
 import { Music as DiscIcon, Star, MapPin } from 'lucide-react';
+import { db } from './firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPlayerHandle | null> }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactStatus, setContactStatus] = useState('');
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const handleContactSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setContactStatus('loading');
+    try {
+      await addDoc(collection(db, 'messages'), {
+        name: contactName,
+        email: contactEmail,
+        message: contactMessage,
+        createdAt: new Date().toISOString()
+      });
+      setContactStatus('success');
+      setContactName('');
+      setContactEmail('');
+      setContactMessage('');
+      setTimeout(() => setContactStatus(''), 5000);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setContactStatus('error');
+    }
+  };
 
 
   return (
@@ -417,23 +445,57 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
               </div>
             </div>
 
-            <form className="bg-black/50 p-8 rounded-2xl border border-white/5">
+            <form onSubmit={handleContactSubmit} className="bg-black/50 p-8 rounded-2xl border border-white/5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Nombre</label>
-                  <input type="text" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink transition-colors" />
+                  <input
+                    type="text"
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink transition-colors"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Email</label>
-                  <input type="email" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink transition-colors" />
+                  <input
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink transition-colors"
+                  />
                 </div>
               </div>
               <div className="mb-6">
                 <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Mensaje</label>
-                <textarea rows={4} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink transition-colors"></textarea>
+                <textarea
+                  rows={4}
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink transition-colors"
+                ></textarea>
               </div>
-              <button type="submit" className="w-full bg-neon-pink text-black font-black uppercase tracking-widest py-4 rounded-lg hover:bg-white transition-all">
-                Enviar Mensaje
+
+              {contactStatus === 'success' && (
+                <div className="mb-4 text-neon-green font-bold text-sm bg-neon-green/10 p-3 rounded-lg border border-neon-green/20">
+                  ¡Mensaje enviado con éxito! Nos pondremos en contacto pronto.
+                </div>
+              )}
+              {contactStatus === 'error' && (
+                <div className="mb-4 text-[#FF0000] font-bold text-sm bg-[#FF0000]/10 p-3 rounded-lg border border-[#FF0000]/20">
+                  Hubo un error al enviar el mensaje. Por favor intenta de nuevo.
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={contactStatus === 'loading'}
+                className="w-full bg-neon-pink text-black font-black uppercase tracking-widest py-4 rounded-lg hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {contactStatus === 'loading' ? 'Enviando...' : 'Enviar Mensaje'}
               </button>
             </form>
           </div>
