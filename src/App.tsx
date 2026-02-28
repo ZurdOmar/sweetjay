@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { Instagram, Youtube, Music, Menu, X, Mail } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,7 +10,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Admin } from './components/Admin';
 import { Music as DiscIcon, Star, MapPin } from 'lucide-react';
 import { db } from './firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
 
 function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPlayerHandle | null> }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,6 +20,48 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
   const [contactStatus, setContactStatus] = useState('');
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const [galleryImages, setGalleryImages] = useState<any[]>([]);
+  const [firebaseVideos, setFirebaseVideos] = useState<any[]>([]);
+  const [firebaseEvents, setFirebaseEvents] = useState<any[]>([]);
+  const [firebaseMusic, setFirebaseMusic] = useState<any[]>([]);
+  const [firebaseAds, setFirebaseAds] = useState<any[]>([]);
+  const [showAd, setShowAd] = useState(true);
+
+  useEffect(() => {
+    const fetchDynamicData = async () => {
+      try {
+        // Fetch Photos
+        const photosQ = query(collection(db, 'images'), orderBy('createdAt', 'desc'), limit(8));
+        const photosSnapshot = await getDocs(photosQ);
+        setGalleryImages(photosSnapshot.docs.map(doc => doc.data()));
+
+        // Fetch Videos
+        const videosQ = query(collection(db, 'videos'), orderBy('createdAt', 'desc'), limit(2));
+        const videosSnapshot = await getDocs(videosQ);
+        setFirebaseVideos(videosSnapshot.docs.map(doc => doc.data()));
+
+        // Fetch Events
+        const eventsQ = query(collection(db, 'events'), orderBy('createdAt', 'desc'), limit(1));
+        const eventsSnapshot = await getDocs(eventsQ);
+        setFirebaseEvents(eventsSnapshot.docs.map(doc => doc.data()));
+
+        // Fetch Music
+        const musicQ = query(collection(db, 'music'), orderBy('createdAt', 'desc'), limit(4));
+        const musicSnapshot = await getDocs(musicQ);
+        setFirebaseMusic(musicSnapshot.docs.map(doc => doc.data()));
+
+        // Fetch Ads
+        const adsQ = query(collection(db, 'ads'), orderBy('createdAt', 'desc'), limit(1));
+        const adsSnapshot = await getDocs(adsQ);
+        setFirebaseAds(adsSnapshot.docs.map(doc => doc.data()));
+      } catch (error) {
+        console.error("Error fetching dynamic data:", error);
+      }
+    };
+
+    fetchDynamicData();
+  }, []);
 
   const handleContactSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -184,31 +226,53 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { title: 'EL DON', year: '2024', type: 'Remix', detail: 'ft. Adam Valey', icon: <DiscIcon className="w-12 h-12" /> },
-              { title: 'EN MOVIMIENTO', year: '2024', type: 'Single', detail: 'Urban Scene', icon: <DiscIcon className="w-12 h-12" /> },
-              { title: 'EL DON', year: '2024', type: 'Single', detail: 'Original Version', icon: <DiscIcon className="w-12 h-12" /> },
-              { title: 'MY ESSENCE', year: '2023', type: 'EP', detail: 'Debut (6 Tracks)', icon: <DiscIcon className="w-12 h-12" /> }
-            ].map((disc, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-black border border-white/5 rounded-xl p-6 hover:border-neon-pink/50 transition-colors group text-center"
-              >
-                <div className="aspect-square bg-white/5 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-                  <div className="text-white group-hover:text-neon-pink transition-colors">
-                    {disc.icon}
+            {firebaseMusic.length > 0 ? (
+              firebaseMusic.map((disc, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-black border border-white/5 rounded-xl p-6 hover:border-neon-pink/50 transition-colors group text-center"
+                >
+                  <div className="aspect-square bg-white/5 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+                    <div className="text-white group-hover:text-neon-pink transition-colors">
+                      <DiscIcon className="w-12 h-12" />
+                    </div>
                   </div>
-                </div>
-                <h3 className="text-xl font-bold mb-1">{disc.title}</h3>
-                <p className="text-neon-pink text-xs font-bold uppercase mb-1">{disc.type}</p>
-                <p className="text-gray-400 text-sm">{disc.detail}</p>
-                <p className="text-gray-500 text-xs mt-2">{disc.year}</p>
-              </motion.div>
-            ))}
+                  <h3 className="text-xl font-bold mb-1 truncate">{disc.name?.replace('.mp3', '') || 'Pista'}</h3>
+                  <p className="text-neon-pink text-xs font-bold uppercase mb-1">Reciente</p>
+                  <audio controls className="w-full mt-4 h-8" src={disc.url}></audio>
+                </motion.div>
+              ))
+            ) : (
+              [
+                { title: 'EL DON', year: '2024', type: 'Remix', detail: 'ft. Adam Valey', icon: <DiscIcon className="w-12 h-12" /> },
+                { title: 'EN MOVIMIENTO', year: '2024', type: 'Single', detail: 'Urban Scene', icon: <DiscIcon className="w-12 h-12" /> },
+                { title: 'EL DON', year: '2024', type: 'Single', detail: 'Original Version', icon: <DiscIcon className="w-12 h-12" /> },
+                { title: 'MY ESSENCE', year: '2023', type: 'EP', detail: 'Debut (6 Tracks)', icon: <DiscIcon className="w-12 h-12" /> }
+              ].map((disc, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-black border border-white/5 rounded-xl p-6 hover:border-neon-pink/50 transition-colors group text-center"
+                >
+                  <div className="aspect-square bg-white/5 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+                    <div className="text-white group-hover:text-neon-pink transition-colors">
+                      {disc.icon}
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold mb-1">{disc.title}</h3>
+                  <p className="text-neon-pink text-xs font-bold uppercase mb-1">{disc.type}</p>
+                  <p className="text-gray-400 text-sm">{disc.detail}</p>
+                  <p className="text-gray-500 text-xs mt-2">{disc.year}</p>
+                </motion.div>
+              ))
+            )}
           </div>
 
           <div className="mt-12 text-center">
@@ -233,13 +297,23 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-neon-pink/10"
-            >
-              <img src="/images/jeune.jpeg" alt="Próximo Evento" className="w-full h-auto" />
-            </motion.div>
+            {firebaseEvents.length > 0 ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-neon-pink/10"
+              >
+                <img src={firebaseEvents[0].url} alt="Próximo Evento" className="w-full h-auto" />
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-neon-pink/10"
+              >
+                <img src="/images/jeune.jpeg" alt="Próximo Evento" className="w-full h-auto" />
+              </motion.div>
+            )}
             <div className="space-y-8">
               <div className="bg-white/5 p-8 rounded-2xl border-l-4 border-neon-pink">
                 <span className="text-neon-pink font-bold uppercase tracking-widest text-sm block mb-2">Destacado</span>
@@ -271,30 +345,55 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div className="aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-              <iframe
-                className="w-full h-full"
-                src="https://www.youtube.com/embed/2TegPQpWJns"
-                title="Sweetjay - HOODIE (Official Video)"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
-            <div className="flex flex-col justify-center">
-              <h3 className="text-2xl font-bold mb-4 text-neon-pink uppercase">HOODIE - Video Oficial</h3>
-              <p className="text-gray-300 text-lg mb-6">
-                Descubre el universo visual de Sweetjay. Cada video es una pieza que complementa el ritmo y la lírica,
-                llevando la experiencia musical a otro nivel sensorial.
-              </p>
-              <a
-                href="https://www.youtube.com/@Sweetjay312"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-3 bg-white text-black px-8 py-3 rounded-full font-bold uppercase tracking-wider hover:bg-neon-pink transition-all self-start"
-              >
-                Suscribirse en YouTube
-              </a>
-            </div>
+            {firebaseVideos.length > 0 ? (
+              firebaseVideos.map((video, idx) => {
+                // Convert https://www.youtube.com/watch?v=2TegPQpWJns to https://www.youtube.com/embed/2TegPQpWJns
+                let embedUrl = video.url;
+                if (embedUrl.includes('watch?v=')) {
+                  embedUrl = embedUrl.replace('watch?v=', 'embed/');
+                } else if (embedUrl.includes('youtu.be/')) {
+                  embedUrl = embedUrl.replace('youtu.be/', 'youtube.com/embed/');
+                }
+                return (
+                  <div key={idx} className="aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+                    <iframe
+                      className="w-full h-full"
+                      src={embedUrl}
+                      title="Sweetjay Video"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+                <iframe
+                  className="w-full h-full"
+                  src="https://www.youtube.com/embed/2TegPQpWJns"
+                  title="Sweetjay - HOODIE (Official Video)"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            )}
+            {firebaseVideos.length < 2 && (
+              <div className="flex flex-col justify-center">
+                <h3 className="text-2xl font-bold mb-4 text-neon-pink uppercase">HOODIE - Video Oficial</h3>
+                <p className="text-gray-300 text-lg mb-6">
+                  Descubre el universo visual de Sweetjay. Cada video es una pieza que complementa el ritmo y la lírica,
+                  llevando la experiencia musical a otro nivel sensorial.
+                </p>
+                <a
+                  href="https://www.youtube.com/@Sweetjay312"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-3 bg-white text-black px-8 py-3 rounded-full font-bold uppercase tracking-wider hover:bg-neon-pink transition-all self-start"
+                >
+                  Suscribirse en YouTube
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -313,32 +412,52 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {[
-              '/images/extracted/img_0_0.png',
-              '/images/extracted/img_4_0.png',
-              '/images/extracted/img_16_0.png',
-              '/images/extracted/img_2_2.png',
-              '/images/extracted/img_6_2.png',
-              '/images/extracted/img_8_4.png',
-              '/images/extracted/img_13_9.png',
-              '/images/extracted/img_18_2.png',
-            ].map((img, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-                className="aspect-square relative group overflow-hidden rounded-xl bg-gray-900 border border-white/5"
-              >
-                <img
-                  src={img}
-                  alt={`Sweetjay Gallery ${index + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-neon-pink/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </motion.div>
-            ))}
+            {galleryImages.length > 0 ? (
+              galleryImages.map((img, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                  className="aspect-square relative group overflow-hidden rounded-xl bg-gray-900 border border-white/5"
+                >
+                  <img
+                    src={img.url}
+                    alt={img.name || `Sweetjay Gallery ${index + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-neon-pink/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </motion.div>
+              ))
+            ) : (
+              [
+                '/images/extracted/img_0_0.png',
+                '/images/extracted/img_4_0.png',
+                '/images/extracted/img_16_0.png',
+                '/images/extracted/img_2_2.png',
+                '/images/extracted/img_6_2.png',
+                '/images/extracted/img_8_4.png',
+                '/images/extracted/img_13_9.png',
+                '/images/extracted/img_18_2.png',
+              ].map((img, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                  className="aspect-square relative group overflow-hidden rounded-xl bg-gray-900 border border-white/5"
+                >
+                  <img
+                    src={img}
+                    alt={`Sweetjay Gallery ${index + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-neon-pink/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -519,7 +638,36 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
           <Mail size={20} className="hover:text-neon-pink transition-colors cursor-pointer" />
         </div>
       </footer>
-    </div>
+
+      {/* Promotional Banner Overlay */}
+      <AnimatePresence>
+        {
+          firebaseAds.length > 0 && showAd && (
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              className="fixed bottom-0 left-0 right-0 z-50 p-4 flex justify-center pointer-events-none"
+            >
+              <div className="relative pointer-events-auto bg-dark-card border border-neon-pink/30 rounded-2xl shadow-2xl overflow-hidden max-w-4xl w-full">
+                <button
+                  onClick={() => setShowAd(false)}
+                  className="absolute top-2 right-2 bg-black/50 hover:bg-black/80 text-white p-1 rounded-full z-10 transition-colors"
+                  aria-label="Cerrar anuncio"
+                >
+                  <X size={20} />
+                </button>
+                <img
+                  src={firebaseAds[0].url}
+                  alt="Promo Banner"
+                  className="w-full h-auto max-h-[150px] md:max-h-[250px] object-cover"
+                />
+              </div>
+            </motion.div>
+          )
+        }
+      </AnimatePresence >
+    </div >
   );
 }
 
