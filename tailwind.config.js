@@ -10,6 +10,7 @@ export default {
           green: '#39ff14',
           blue: '#00f3ff',
           purple: '#bc13fe',
+          pink: '#ff00ff',
         },
         dark: {
           bg: '#0a0a0a',

@@ -1,29 +1,130 @@
-import { useState } from 'react';
-import { Play, Instagram, Youtube, User, Music, Menu, X, Mail } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import type { FormEvent } from 'react';
+import { Instagram, Youtube, Music, Menu, X, Mail } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { HeroCarousel } from './components/HeroCarousel';
+import { MusicPlayer } from './components/MusicPlayer';
+import type { MusicPlayerHandle } from './components/MusicPlayer';
+import { Intro } from './components/Intro';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Admin } from './components/Admin';
+import { Music as DiscIcon, Star, MapPin, Megaphone } from 'lucide-react';
+import { db } from './firebase';
+import { collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
 
-function App() {
+function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPlayerHandle | null> }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactStatus, setContactStatus] = useState('');
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
+  const [galleryImages, setGalleryImages] = useState<any[]>([]);
+  const [firebaseVideos, setFirebaseVideos] = useState<any[]>([]);
+  const [firebaseEvents, setFirebaseEvents] = useState<any[]>([]);
+  const [firebaseEventsInfo, setFirebaseEventsInfo] = useState<any>({ title: 'Tour 2025', description: 'Prepárate para vivir la experiencia de Sweetjay en vivo. Nuevas fechas, nuevos shows y toda la energía del género urbano.', footer: 'Próximamente más fechas...' });
+  const [firebaseBioInfo, setFirebaseBioInfo] = useState<any>({
+    title: 'Originario de Colima, 27 años',
+    content: 'Sweetjay es un apasionado de la música y la expresión artística desde temprana edad...',
+    highlights: []
+  });
+  const [firebaseMusic, setFirebaseMusic] = useState<any[]>([]);
+  const [firebaseAds, setFirebaseAds] = useState<any[]>([]);
+  const [showAd, setShowAd] = useState(true);
+
+  useEffect(() => {
+    const fetchDynamicData = async () => {
+      try {
+        // Fetch Photos
+        const photosQ = query(collection(db, 'images'), orderBy('createdAt', 'desc'), limit(8));
+        const photosSnapshot = await getDocs(photosQ);
+        setGalleryImages(photosSnapshot.docs.map(doc => doc.data()));
+
+        // Fetch Videos
+        const videosQ = query(collection(db, 'videos'), orderBy('createdAt', 'desc'), limit(2));
+        const videosSnapshot = await getDocs(videosQ);
+        setFirebaseVideos(videosSnapshot.docs.map(doc => doc.data()));
+
+        // Fetch Events
+        const eventsQ = query(collection(db, 'events'), orderBy('createdAt', 'desc'), limit(1));
+        const eventsSnapshot = await getDocs(eventsQ);
+        setFirebaseEvents(eventsSnapshot.docs.map(doc => doc.data()));
+
+        // Fetch Music
+        const musicQ = query(collection(db, 'music'), orderBy('createdAt', 'desc'), limit(4));
+        const musicSnapshot = await getDocs(musicQ);
+        setFirebaseMusic(musicSnapshot.docs.map(doc => doc.data()));
+
+        // Fetch Ads
+        const adsQ = query(collection(db, 'ads'), orderBy('createdAt', 'desc'), limit(1));
+        const adsSnapshot = await getDocs(adsQ);
+        setFirebaseAds(adsSnapshot.docs.map(doc => doc.data()));
+
+        // Fetch Events Info
+        const eventsInfoSnapshot = await getDocs(query(collection(db, 'settings')));
+        const info = eventsInfoSnapshot.docs.find(d => d.id === 'eventsInfo');
+        if (info) {
+          setFirebaseEventsInfo(info.data());
+        }
+
+        const bInfo = eventsInfoSnapshot.docs.find(d => d.id === 'bioInfo');
+        if (bInfo) {
+          setFirebaseBioInfo(bInfo.data());
+        }
+      } catch (error) {
+        console.error("Error fetching dynamic data:", error);
+      }
+    };
+
+    fetchDynamicData();
+  }, []);
+
+  const handleContactSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setContactStatus('loading');
+    try {
+      await addDoc(collection(db, 'messages'), {
+        name: contactName,
+        email: contactEmail,
+        message: contactMessage,
+        createdAt: new Date().toISOString()
+      });
+      setContactStatus('success');
+      setContactName('');
+      setContactEmail('');
+      setContactMessage('');
+      setTimeout(() => setContactStatus(''), 5000);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setContactStatus('error');
+    }
+  };
+
+
   return (
     <div className="min-h-screen bg-dark-bg text-white overflow-x-hidden selection:bg-neon-green selection:text-black">
+
+      <MusicPlayer ref={musicPlayerRef} />
+
       {/* Navigation */}
       <nav className="fixed w-full z-50 bg-black/80 backdrop-blur-md border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-24">
             <div className="flex-shrink-0">
-              <h1 className="text-2xl font-bold tracking-tighter hover:text-neon-green transition-colors cursor-pointer">
-                SWEET<span className="text-neon-green">JAY</span>
-              </h1>
+              <img
+                src="/images/sweetj-2.png?v=2"
+                alt="Sweet J Logo"
+                className="h-20 w-auto object-contain cursor-pointer hover:drop-shadow-[0_0_15px_rgba(255,0,127,0.6)] transition-all"
+              />
             </div>
 
             {/* Desktop Menu */}
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-8">
-                {['Inicio', 'Música', 'Videos', 'Bio', 'Contacto'].map((item) => (
-                  <a key={item} href={`#${item.toLowerCase()}`} className="hover:text-neon-green transition-colors px-3 py-2 rounded-md text-sm font-medium uppercase tracking-wider">
+                {['Inicio', 'Música', 'Eventos', 'Videos', 'Galería', 'Bio', 'Contacto'].map((item) => (
+                  <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} className="hover:text-neon-pink transition-colors px-3 py-2 rounded-md text-sm font-medium uppercase tracking-wider">
                     {item}
                   </a>
                 ))}
@@ -32,7 +133,7 @@ function App() {
 
             {/* Mobile menu button */}
             <div className="md:hidden">
-              <button onClick={toggleMenu} className="text-white hover:text-neon-green p-2">
+              <button onClick={toggleMenu} className="text-white hover:text-neon-pink p-2">
                 {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
             </div>
@@ -49,12 +150,12 @@ function App() {
               className="md:hidden bg-black border-b border-white/10"
             >
               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                {['Inicio', 'Música', 'Videos', 'Bio', 'Contacto'].map((item) => (
+                {['Inicio', 'Música', 'Eventos', 'Videos', 'Galería', 'Bio', 'Contacto'].map((item) => (
                   <a
                     key={item}
                     href={`#${item.toLowerCase()}`}
                     onClick={() => setIsMenuOpen(false)}
-                    className="block px-3 py-4 rounded-md text-base font-bold uppercase text-center hover:bg-white/5 hover:text-neon-green"
+                    className="block px-3 py-4 rounded-md text-base font-bold uppercase text-center hover:bg-white/5 hover:text-neon-pink"
                   >
                     {item}
                   </a>
@@ -66,51 +167,65 @@ function App() {
       </nav>
 
       {/* Hero Section */}
-      <section id="inicio" className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section id="inicio" className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden py-24 md:py-32">
         <div className="absolute inset-0 z-0">
-          {/* Placeholder for Hero Image - Dark/Neon Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black opacity-90"></div>
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c')] bg-cover bg-center opacity-30 mix-blend-overlay"></div>
+          {/* Background - User Image */}
+          <div className="absolute inset-0 bg-black"></div>
+          <div className="absolute inset-0 bg-[url('/images/background.jpg')] bg-cover bg-[70%_center] bg-no-repeat opacity-60"></div>
+
+          {/* Gradient Overlay for Readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/80"></div>
 
           {/* Neon Glow Effects */}
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-green/20 rounded-full blur-[100px]"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-blue/20 rounded-full blur-[100px]"></div>
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-neon-pink/10 rounded-full blur-[120px]"></div>
         </div>
 
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+        <div className="relative z-10 flex flex-col items-center gap-12 w-full max-w-4xl px-4">
+
+          {/* 1. Dynamic Carousel (Replaces static photo) */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+            className="w-full flex justify-center"
           >
-            <h2 className="text-neon-green tracking-[0.2em] font-medium mb-4 text-sm md:text-base">NUEVO LANZAMIENTO</h2>
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tighter leading-none">
-              <span className="block text-white">HOODIE</span>
-            </h1>
-            <p className="text-gray-400 text-lg md:text-xl mb-8 max-w-2xl mx-auto">
-              El nuevo sencillo ya disponible en todas las plataformas digitales.
-            </p>
+            <HeroCarousel />
+          </motion.div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <a
-                href="https://open.spotify.com/artist/3iRxXFhGui4HYHDrhgWgr9"
-                target="_blank"
-                rel="noreferrer"
-                className="group flex items-center gap-2 bg-neon-green text-black px-8 py-4 rounded-full font-bold uppercase tracking-widest hover:bg-white transition-all transform hover:scale-105"
-              >
-                <Play className="fill-current" size={20} />
-                Escuchar Ahora
-              </a>
-              <a
-                href="https://www.youtube.com/@Sweetjay312"
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-2 border border-white/20 hover:border-neon-green hover:text-neon-green px-8 py-4 rounded-full font-bold uppercase tracking-widest transition-all bg-black/50 backdrop-blur-sm"
-              >
-                <Youtube size={20} />
-                Ver Video
-              </a>
-            </div>
+          {/* 2. Social Media Icons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="flex flex-wrap justify-center gap-6"
+          >
+            <a
+              href="https://open.spotify.com/artist/3iRxXFhGui4HYHDrhgWgr9"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-3 bg-[#1DB954] text-black px-6 py-3 rounded-full font-bold uppercase tracking-wider hover:bg-white transition-all transform hover:scale-105 shadow-lg"
+            >
+              <Music className="fill-current" size={20} />
+              Spotify
+            </a>
+            <a
+              href="https://www.youtube.com/@Sweetjay312"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-3 bg-[#FF0000] text-white px-6 py-3 rounded-full font-bold uppercase tracking-wider hover:bg-white hover:text-[#FF0000] transition-all transform hover:scale-105 shadow-lg"
+            >
+              <Youtube className="fill-current" size={20} />
+              YouTube
+            </a>
+            <a
+              href="https://www.instagram.com/s.weet.jay/"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-3 bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] text-white px-6 py-3 rounded-full font-bold uppercase tracking-wider hover:opacity-90 transition-all transform hover:scale-105 shadow-lg"
+            >
+              <Instagram size={20} />
+              Instagram
+            </a>
           </motion.div>
         </div>
       </section>
@@ -125,28 +240,242 @@ function App() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-black mb-4">MÚSICA</h2>
-            <div className="w-24 h-1 bg-neon-green mx-auto"></div>
+            <div className="w-24 h-1 bg-neon-pink mx-auto"></div>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Mock Items for now - would be Spotify Embeds */}
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="bg-black border border-white/5 rounded-xl p-6 hover:border-neon-green/50 transition-colors group">
-                <div className="aspect-square bg-gray-800 rounded-lg mb-4 relative overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center group-hover:bg-black/50 transition-colors">
-                    <Music className="text-gray-600 group-hover:text-neon-green w-12 h-12 transition-colors" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {firebaseMusic.length > 0 ? (
+              firebaseMusic.map((disc, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-black border border-white/5 rounded-xl p-6 hover:border-neon-pink/50 transition-colors group text-center"
+                >
+                  <div className="aspect-square bg-white/5 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+                    <div className="text-white group-hover:text-neon-pink transition-colors">
+                      <DiscIcon className="w-12 h-12" />
+                    </div>
                   </div>
-                </div>
-                <h3 className="text-xl font-bold mb-1">Nombre de la Canción</h3>
-                <p className="text-gray-400 text-sm">Single • 2025</p>
-              </div>
-            ))}
+                  <h3 className="text-xl font-bold mb-1 truncate">{disc.name?.replace('.mp3', '') || 'Pista'}</h3>
+                  <p className="text-neon-pink text-xs font-bold uppercase mb-1">Reciente</p>
+                  <audio controls className="w-full mt-4 h-8" src={disc.url}></audio>
+                </motion.div>
+              ))
+            ) : (
+              [
+                { title: 'EL DON', year: '2024', type: 'Remix', detail: 'ft. Adam Valey', icon: <DiscIcon className="w-12 h-12" /> },
+                { title: 'EN MOVIMIENTO', year: '2024', type: 'Single', detail: 'Urban Scene', icon: <DiscIcon className="w-12 h-12" /> },
+                { title: 'EL DON', year: '2024', type: 'Single', detail: 'Original Version', icon: <DiscIcon className="w-12 h-12" /> },
+                { title: 'MY ESSENCE', year: '2023', type: 'EP', detail: 'Debut (6 Tracks)', icon: <DiscIcon className="w-12 h-12" /> }
+              ].map((disc, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-black border border-white/5 rounded-xl p-6 hover:border-neon-pink/50 transition-colors group text-center"
+                >
+                  <div className="aspect-square bg-white/5 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+                    <div className="text-white group-hover:text-neon-pink transition-colors">
+                      {disc.icon}
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold mb-1">{disc.title}</h3>
+                  <p className="text-neon-pink text-xs font-bold uppercase mb-1">{disc.type}</p>
+                  <p className="text-gray-400 text-sm">{disc.detail}</p>
+                  <p className="text-gray-500 text-xs mt-2">{disc.year}</p>
+                </motion.div>
+              ))
+            )}
           </div>
 
           <div className="mt-12 text-center">
-            <a href="https://open.spotify.com/artist/3iRxXFhGui4HYHDrhgWgr9" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-neon-green hover:text-white transition-colors uppercase font-bold tracking-widest text-sm">
+            <a href="https://open.spotify.com/artist/3iRxXFhGui4HYHDrhgWgr9" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-neon-pink hover:text-white transition-colors uppercase font-bold tracking-widest text-sm">
               Ver discografía completa <span className="text-xl">→</span>
             </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Próximos Eventos Section */}
+      <section id="eventos" className="py-24 relative bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase">PRÓXIMOS EVENTOS</h2>
+            <div className="w-24 h-1 bg-neon-pink mx-auto"></div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {firebaseEvents.length > 0 ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-neon-pink/10"
+              >
+                <img src={firebaseEvents[0].url} alt="Próximo Evento" className="w-full h-auto" />
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-neon-pink/10"
+              >
+                <img src="/images/jeune.jpeg" alt="Próximo Evento" className="w-full h-auto" />
+              </motion.div>
+            )}
+            <div className="space-y-8">
+              <div className="bg-white/5 p-8 rounded-2xl border-l-4 border-neon-pink shadow-lg shadow-neon-pink/10">
+                <span className="text-neon-pink font-bold uppercase tracking-widest text-sm block mb-2">Destacado</span>
+                <h3 className="text-3xl font-bold mb-4">{firebaseEventsInfo.title}</h3>
+                <p className="text-gray-300 text-lg mb-6">
+                  {firebaseEventsInfo.description}
+                </p>
+                <div className="flex items-center gap-3 text-gray-400">
+                  <MapPin size={20} className="text-neon-pink" />
+                  <span>{firebaseEventsInfo.footer}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Videos Section */}
+      <section id="videos" className="py-24 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase">VIDEOS</h2>
+            <div className="w-24 h-1 bg-neon-pink mx-auto"></div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {firebaseVideos.length > 0 ? (
+              firebaseVideos.map((video, idx) => {
+                // Convert https://www.youtube.com/watch?v=2TegPQpWJns to https://www.youtube.com/embed/2TegPQpWJns
+                let embedUrl = video.url;
+                if (embedUrl.includes('watch?v=')) {
+                  embedUrl = embedUrl.replace('watch?v=', 'embed/');
+                } else if (embedUrl.includes('youtu.be/')) {
+                  embedUrl = embedUrl.replace('youtu.be/', 'youtube.com/embed/');
+                }
+                return (
+                  <div key={idx} className="aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+                    <iframe
+                      className="w-full h-full"
+                      src={embedUrl}
+                      title="Sweetjay Video"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+                <iframe
+                  className="w-full h-full"
+                  src="https://www.youtube.com/embed/2TegPQpWJns"
+                  title="Sweetjay - HOODIE (Official Video)"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            )}
+            {firebaseVideos.length < 2 && (
+              <div className="flex flex-col justify-center">
+                <h3 className="text-2xl font-bold mb-4 text-neon-pink uppercase">HOODIE - Video Oficial</h3>
+                <p className="text-gray-300 text-lg mb-6">
+                  Descubre el universo visual de Sweetjay. Cada video es una pieza que complementa el ritmo y la lírica,
+                  llevando la experiencia musical a otro nivel sensorial.
+                </p>
+                <a
+                  href="https://www.youtube.com/@Sweetjay312"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-3 bg-white text-black px-8 py-3 rounded-full font-bold uppercase tracking-wider hover:bg-neon-pink transition-all self-start"
+                >
+                  Suscribirse en YouTube
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery Section */}
+      <section id="galería" className="py-24 bg-dark-card border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase">GALERÍA</h2>
+            <div className="w-24 h-1 bg-neon-pink mx-auto"></div>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {galleryImages.length > 0 ? (
+              galleryImages.map((img, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                  className="aspect-square relative group overflow-hidden rounded-xl bg-gray-900 border border-white/5"
+                >
+                  <img
+                    src={img.url}
+                    alt={img.name || `Sweetjay Gallery ${index + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-neon-pink/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </motion.div>
+              ))
+            ) : (
+              [
+                '/images/extracted/img_0_0.png',
+                '/images/extracted/img_4_0.png',
+                '/images/extracted/img_16_0.png',
+                '/images/extracted/img_2_2.png',
+                '/images/extracted/img_6_2.png',
+                '/images/extracted/img_8_4.png',
+                '/images/extracted/img_13_9.png',
+                '/images/extracted/img_18_2.png',
+              ].map((img, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                  className="aspect-square relative group overflow-hidden rounded-xl bg-gray-900 border border-white/5"
+                >
+                  <img
+                    src={img}
+                    alt={`Sweetjay Gallery ${index + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-neon-pink/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -161,13 +490,14 @@ function App() {
               viewport={{ once: true }}
               className="relative"
             >
-              <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-gray-800">
-                {/* Placeholder for Artist Photo */}
-                <div className="w-full h-full bg-gradient-to-t from-black to-gray-800 flex items-center justify-center">
-                  <User size={64} className="text-white/20" />
-                </div>
+              <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-gray-900 border border-white/10 shadow-neon">
+                <img
+                  src="/images/artist.png"
+                  alt="Sweetjay"
+                  className="w-full h-full object-cover object-top"
+                />
               </div>
-              <div className="absolute -bottom-6 -right-6 w-full h-full border-2 border-neon-green/30 rounded-2xl -z-10"></div>
+              <div className="absolute -bottom-6 -right-6 w-full h-full border-2 border-neon-pink/30 rounded-2xl -z-10"></div>
             </motion.div>
 
             <motion.div
@@ -175,23 +505,63 @@ function App() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-4xl md:text-6xl font-black mb-6">SWEETJAY</h2>
-              <h3 className="text-xl text-neon-green font-bold mb-6 uppercase tracking-wider">Desde Colima Para El Mundo</h3>
-              <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                Directo desde la misteriosa belleza de Colima, envuelta entre playas y volcanes.
-                Sweetjay trae una propuesta fresca al género urbano, fusionando ritmos latinos con
-                letras que narran la realidad y los sueños de una generación.
-              </p>
-              <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                "Repartimos mucho flow con música". Con lanzamientos recientes como "HOODIE" y "El Don",
-                está marcando su territorio en la escena musical emergente.
-              </p>
+              <img src="/images/sweetj-2.png?v=2" alt="Sweet J" className="w-64 h-auto mb-6" />
+              <h3 className="text-xl text-white font-bold mb-6 uppercase tracking-wider">{firebaseBioInfo.title}</h3>
+              <div className="space-y-6 mb-8">
+                {firebaseBioInfo.content.split('\n').filter((p: string) => p.trim()).map((paragraph: string, idx: number) => (
+                  <p key={idx} className="text-gray-300 text-lg leading-relaxed">
+                    {paragraph.includes('**') ? (
+                      paragraph.split('**').map((text: string, i: number) =>
+                        i % 2 === 1 ? <strong key={i} className="text-white">{text}</strong> : text
+                      )
+                    ) : paragraph}
+                  </p>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                {firebaseBioInfo.highlights && firebaseBioInfo.highlights.length > 0 ? (
+                  firebaseBioInfo.highlights.map((item: any, idx: number) => (
+                    <div key={idx} className="bg-white/5 p-4 rounded-xl border border-white/5">
+                      <h4 className="text-neon-pink font-bold text-sm mb-2 uppercase flex items-center gap-2">
+                        {item.iconType === 'disc' ? <DiscIcon size={16} /> : item.iconType === 'megaphone' ? <Megaphone size={16} /> : <Star size={16} />}
+                        {item.title}
+                      </h4>
+                      <pre className="text-gray-400 text-xs whitespace-pre-wrap font-sans leading-relaxed">
+                        {item.content}
+                      </pre>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                      <h4 className="text-neon-pink font-bold text-sm mb-2 uppercase flex items-center gap-2">
+                        <Star size={16} /> Logros
+                      </h4>
+                      <ul className="text-gray-400 text-xs space-y-2">
+                        <li>• Composición "Dos Locos" - Grupo Cañaveral (2019)</li>
+                        <li>• Colaboración con Armando Gómez (Latin Grammy)</li>
+                        <li>• Ranking Top #10 Radio 91.7 (2024)</li>
+                        <li>• Participación en "Colimán" con Antiwa</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                      <h4 className="text-neon-pink font-bold text-sm mb-2 uppercase flex items-center gap-2">
+                        <DiscIcon size={16} /> Impacto
+                      </h4>
+                      <p className="text-gray-400 text-xs">
+                        Difusión de artistas locales y organización de eventos como Elixir vol1/vol2 y Flow312 Forum DMT.
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
 
               <div className="flex gap-4">
-                <a href="https://www.instagram.com/s.weet.jay/" target="_blank" rel="noreferrer" className="p-3 bg-white/5 rounded-full hover:bg-neon-green hover:text-black transition-colors">
+                <a href="https://www.instagram.com/s.weet.jay/" target="_blank" rel="noreferrer" className="p-3 bg-white/5 rounded-full hover:bg-neon-pink hover:text-black transition-colors">
                   <Instagram size={24} />
                 </a>
-                <a href="https://www.youtube.com/@Sweetjay312" target="_blank" rel="noreferrer" className="p-3 bg-white/5 rounded-full hover:bg-neon-green hover:text-black transition-colors">
+                <a href="https://www.youtube.com/@Sweetjay312" target="_blank" rel="noreferrer" className="p-3 bg-white/5 rounded-full hover:bg-neon-pink hover:text-black transition-colors">
                   <Youtube size={24} />
                 </a>
               </div>
@@ -200,16 +570,169 @@ function App() {
         </div>
       </section>
 
+      {/* Contact Section */}
+      <section id="contacto" className="py-24 bg-dark-card border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            <div>
+              <h2 className="text-4xl font-black mb-6 uppercase">Contacto</h2>
+              <p className="text-gray-400 text-lg mb-8">
+                ¿Interesado en una colaboración, booking o prensa? Ponte en contacto directamente con mi equipo.
+              </p>
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-4 bg-white/5 rounded-xl text-neon-green">
+                    <Mail size={24} className="text-neon-pink" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm uppercase text-gray-400">Email</h4>
+                    <p className="text-lg">booking@sweetjay.com</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="p-4 bg-white/5 rounded-xl text-neon-green">
+                    <Instagram size={24} className="text-neon-pink" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm uppercase text-gray-400">Directo</h4>
+                    <p className="text-lg">@s.weet.jay</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleContactSubmit} className="bg-black/50 p-8 rounded-2xl border border-white/5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Nombre</label>
+                  <input
+                    type="text"
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink transition-colors"
+                  />
+                </div>
+              </div>
+              <div className="mb-6">
+                <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Mensaje</label>
+                <textarea
+                  rows={4}
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-neon-pink transition-colors"
+                ></textarea>
+              </div>
+
+              {contactStatus === 'success' && (
+                <div className="mb-4 text-neon-green font-bold text-sm bg-neon-green/10 p-3 rounded-lg border border-neon-green/20">
+                  ¡Mensaje enviado con éxito! Nos pondremos en contacto pronto.
+                </div>
+              )}
+              {contactStatus === 'error' && (
+                <div className="mb-4 text-[#FF0000] font-bold text-sm bg-[#FF0000]/10 p-3 rounded-lg border border-[#FF0000]/20">
+                  Hubo un error al enviar el mensaje. Por favor intenta de nuevo.
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={contactStatus === 'loading'}
+                className="w-full bg-neon-pink text-black font-black uppercase tracking-widest py-4 rounded-lg hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {contactStatus === 'loading' ? 'Enviando...' : 'Enviar Mensaje'}
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="py-12 border-t border-white/10 bg-black text-center">
-        <p className="text-gray-500">© 2026 Sweetjay Music. Todos los derechos reservados.</p>
+      <footer className="py-12 border-t border-white/10 bg-black text-center flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-gray-500 text-sm uppercase tracking-widest mb-2 font-bold opacity-80">Desarrollado por</p>
+          <img
+            src="/images/Logo-zotek_animado.svg"
+            alt="Zotek Logo"
+            className="h-12 w-auto animate-pulse brightness-110"
+          />
+        </div>
+        <p className="text-gray-500">© 2026 Sweetjay Music v2.3. Todos los derechos reservados.</p>
         <div className="mt-4 flex justify-center gap-6 opacity-50">
-          <Instagram size={20} />
-          <Youtube size={20} />
-          <Mail size={20} />
+          <Instagram size={20} className="hover:text-neon-pink transition-colors cursor-pointer" />
+          <Youtube size={20} className="hover:text-neon-pink transition-colors cursor-pointer" />
+          <Mail size={20} className="hover:text-neon-pink transition-colors cursor-pointer" />
         </div>
       </footer>
-    </div>
+
+      {/* Promotional Banner Overlay */}
+      <AnimatePresence>
+        {
+          firebaseAds.length > 0 && showAd && (
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              className="fixed bottom-0 left-0 right-0 z-50 p-4 flex justify-center pointer-events-none"
+            >
+              <div className="relative pointer-events-auto bg-dark-card border border-neon-pink/30 rounded-2xl shadow-2xl overflow-hidden max-w-4xl w-full">
+                <button
+                  onClick={() => setShowAd(false)}
+                  className="absolute top-2 right-2 bg-black/50 hover:bg-black/80 text-white p-1 rounded-full z-10 transition-colors"
+                  aria-label="Cerrar anuncio"
+                >
+                  <X size={20} />
+                </button>
+                <img
+                  src={firebaseAds[0].url}
+                  alt="Promo Banner"
+                  className="w-full h-auto max-h-[150px] md:max-h-[250px] object-cover"
+                />
+              </div>
+            </motion.div>
+          )
+        }
+      </AnimatePresence >
+    </div >
+  );
+}
+
+function App() {
+  const [showIntro, setShowIntro] = useState(true);
+  const musicPlayerRef = useRef<MusicPlayerHandle>(null);
+
+  const handleEnter = () => {
+    setShowIntro(false);
+    setTimeout(() => {
+      musicPlayerRef.current?.forcePlay();
+    }, 100);
+  };
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/" element={
+          <div className="min-h-screen bg-dark-bg text-white overflow-x-hidden selection:bg-neon-green selection:text-black">
+            <AnimatePresence>
+              {showIntro && <Intro onEnter={handleEnter} />}
+            </AnimatePresence>
+            <MainSite musicPlayerRef={musicPlayerRef} />
+          </div>
+        } />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
