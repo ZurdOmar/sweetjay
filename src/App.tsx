@@ -32,6 +32,7 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
   });
   const [firebaseMusic, setFirebaseMusic] = useState<any[]>([]);
   const [firebaseAds, setFirebaseAds] = useState<any[]>([]);
+  const [activeSong, setActiveSong] = useState<any>({ songUrl: '/music/ElDon.mp3?v=2.2', songName: 'El Don' });
   const [showAd, setShowAd] = useState(true);
 
   useEffect(() => {
@@ -73,6 +74,11 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
         if (bInfo) {
           setFirebaseBioInfo(bInfo.data());
         }
+
+        const mConfig = eventsInfoSnapshot.docs.find(d => d.id === 'musicConfig');
+        if (mConfig) {
+          setActiveSong(mConfig.data());
+        }
       } catch (error) {
         console.error("Error fetching dynamic data:", error);
       }
@@ -106,7 +112,11 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
   return (
     <div className="min-h-screen bg-dark-bg text-white overflow-x-hidden selection:bg-neon-green selection:text-black">
 
-      <MusicPlayer ref={musicPlayerRef} />
+      <MusicPlayer
+        ref={musicPlayerRef}
+        songUrl={activeSong.songUrl}
+        songName={activeSong.songName}
+      />
 
       {/* Navigation */}
       <nav className="fixed w-full z-50 bg-black/80 backdrop-blur-md border-b border-white/10">

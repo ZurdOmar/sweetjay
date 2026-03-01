@@ -5,7 +5,16 @@ export interface MusicPlayerHandle {
     forcePlay: () => void;
 }
 
-export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
+interface MusicPlayerProps {
+    songUrl?: string;
+    songName?: string;
+}
+
+export const MusicPlayer = forwardRef<MusicPlayerHandle, MusicPlayerProps>((props, ref) => {
+    const {
+        songUrl = "/music/ElDon.mp3?v=2.2",
+        songName = "El Don"
+    } = props;
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(false); // Start unmuted because we have a user gesture now
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -58,7 +67,7 @@ export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-black/80 backdrop-blur-md border border-neon-pink/30 p-2 rounded-full shadow-[0_0_15px_rgba(255,0,127,0.2)]">
             <audio
                 ref={audioRef}
-                src="/music/ElDon.mp3?v=2.2"
+                src={songUrl}
                 loop
                 preload="auto"
                 playsInline
@@ -81,7 +90,7 @@ export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
 
             <div className="hidden md:flex items-center gap-2 px-2">
                 <div className="flex flex-col">
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">El Don</span>
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">{songName}</span>
                     <span className="text-[10px] text-gray-400">SweetJ</span>
                 </div>
                 <button onClick={toggleMute} className="ml-2 text-white hover:text-neon-pink transition-colors">

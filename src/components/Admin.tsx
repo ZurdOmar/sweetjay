@@ -7,6 +7,7 @@ import { LogIn, LogOut, Upload, Image as ImageIcon, Music as MusicIcon, Calendar
 
 export const Admin = () => {
     const [user, setUser] = useState<any>(null);
+    const [loadingAuth, setLoadingAuth] = useState(true);
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -21,6 +22,7 @@ export const Admin = () => {
     const [eventsList, setEventsList] = useState<any[]>([]);
     const [videosList, setVideosList] = useState<any[]>([]);
     const [adsList, setAdsList] = useState<any[]>([]);
+    const [activeSongConfig, setActiveSongConfig] = useState<any>(null);
     const [eventsInfo, setEventsInfo] = useState<any>({ title: 'Tour 2025', description: 'Prepárate para vivir la experiencia de Sweetjay en vivo. Nuevas fechas, nuevos shows y toda la energía del género urbano.', footer: 'Próximamente más fechas...' });
     const [bioInfo, setBioInfo] = useState<any>({
         title: 'Originario de Colima, 27 años',
@@ -38,13 +40,25 @@ export const Admin = () => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser: any) => {
             setUser(currentUser);
+            // If we are NOT in the middle of a link sign-in, we can stop loading
+            if (!isSignInWithEmailLink(auth, window.location.href)) {
+                setLoadingAuth(false);
+            }
         });
 
         // Check if the user is returning from the email link
         if (isSignInWithEmailLink(auth, window.location.href) && !authProcessed.current) {
             authProcessed.current = true;
+
+            // Try to recover email from local storage
+            const savedEmail = window.localStorage.getItem('emailForSignIn');
+            if (savedEmail) {
+                setTempEmail(savedEmail);
+            }
+
             // Always show the custom form to confirm email (security/privacy as requested)
             setConfirmEmailNeeded(true);
+            setLoadingAuth(false);
         }
 
         return () => unsubscribe();
@@ -57,6 +71,7 @@ export const Admin = () => {
         setLoading(true);
         try {
             await signInWithEmailLink(auth, tempEmail, window.location.href);
+            window.localStorage.removeItem('emailForSignIn');
             setConfirmEmailNeeded(false);
             setMessage('¡Sesión iniciada con éxito!');
         } catch (error: any) {
@@ -108,6 +123,9 @@ export const Admin = () => {
 
             const bInfo = settingsDocs.docs.find(d => d.id === 'bioInfo');
             if (bInfo) setBioInfo(bInfo.data());
+
+            const mConfig = settingsDocs.docs.find(d => d.id === 'musicConfig');
+            if (mConfig) setActiveSongConfig(mConfig.data());
         } catch (err) {
             console.error("Error fetching settings:", err);
         }
@@ -138,6 +156,7 @@ export const Admin = () => {
                 handleCodeInApp: true,
             };
 
+            window.localStorage.setItem('emailForSignIn', email);
             await sendSignInLinkToEmail(auth, email, actionCodeSettings);
             setMessage(`¡Enlace enviado! Revisa la bandeja de entrada de ${email}`);
         } catch (error: any) {
@@ -211,6 +230,23 @@ export const Admin = () => {
         setUploading(false);
     };
 
+    const handleSetActiveSong = async (song: any) => {
+        setUploading(true);
+        try {
+            await setDoc(doc(db, 'settings', 'musicConfig'), {
+                songId: song.id,
+                songUrl: song.url,
+                songName: song.name?.replace('.mp3', '') || 'Pista',
+                updatedAt: new Date().toISOString()
+            });
+            setMessage(`Canción "${song.name}" establecida como activa.`);
+            refreshData();
+        } catch (error: any) {
+            setMessage('Error al establecer canción activa: ' + error.message);
+        }
+        setUploading(false);
+    };
+
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, folder: string) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -229,18 +265,24 @@ export const Admin = () => {
                 setUploading(false);
             },
             async () => {
-                const url = await getDownloadURL(uploadTask.snapshot.ref);
-                // Store metadata in Firestore if needed
-                await addDoc(collection(db, folder), {
-                    url,
-                    name: file.name,
-                    createdAt: new Date().toISOString(),
-                    type: folder === 'images' ? 'gallery' : (folder === 'carousel' ? 'carousel' : 'other')
-                });
-                setMessage(`¡Archivo ${file.name} subido con éxito!`);
-                setUploading(false);
-                setProgress(0);
-                refreshData();
+                try {
+                    const url = await getDownloadURL(uploadTask.snapshot.ref);
+                    // Store metadata in Firestore if needed
+                    await addDoc(collection(db, folder), {
+                        url,
+                        name: file.name,
+                        createdAt: new Date().toISOString(),
+                        type: folder === 'images' ? 'gallery' : (folder === 'carousel' ? 'carousel' : 'other')
+                    });
+                    setMessage(`¡Archivo ${file.name} subido con éxito!`);
+                    setUploading(false);
+                    setProgress(0);
+                    refreshData();
+                } catch (error: any) {
+                    setMessage('Error al guardar metadatos: ' + error.message);
+                    setUploading(false);
+                    setProgress(0);
+                }
             }
         );
     };
@@ -268,6 +310,17 @@ export const Admin = () => {
         }
         setUploading(false);
     };
+
+    if (loadingAuth) {
+        return (
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <RefreshCw className="text-neon-pink animate-spin" size={48} />
+                    <p className="text-neon-pink font-bold animate-pulse">Verificando acceso...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (confirmEmailNeeded) {
         return (
@@ -709,14 +762,31 @@ export const Admin = () => {
                             <section>
                                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><MusicIcon size={20} className="text-neon-pink" /> Música MP3 ({musicList.length})</h3>
                                 <div className="space-y-3">
-                                    {musicList.map((item) => (
-                                        <div key={item.id} className="flex justify-between items-center bg-dark-card border border-white/10 rounded-lg p-3">
-                                            <span className="text-sm font-medium truncate mr-4">{item.name || "Pista de audio"}</span>
-                                            <button onClick={() => handleDelete('music', item.id, item.url)} className="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white p-2 rounded-lg transition-colors flex-shrink-0">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    ))}
+                                    {musicList.map((item) => {
+                                        const isActive = activeSongConfig?.songId === item.id;
+                                        return (
+                                            <div key={item.id} className={`flex justify-between items-center bg-dark-card border rounded-lg p-3 transition-colors ${isActive ? 'border-neon-pink/50 shadow-[0_0_10px_rgba(255,0,127,0.1)]' : 'border-white/10'}`}>
+                                                <div className="flex items-center gap-3 truncate mr-4">
+                                                    {isActive && <MusicIcon size={16} className="text-neon-pink animate-pulse shrink-0" />}
+                                                    <span className={`text-sm font-medium truncate ${isActive ? 'text-neon-pink' : ''}`}>{item.name || "Pista de audio"}</span>
+                                                    {isActive && <span className="text-[10px] bg-neon-pink/20 text-neon-pink px-2 py-0.5 rounded-full font-bold uppercase tracking-widest leading-none">Activa</span>}
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    {!isActive && (
+                                                        <button
+                                                            onClick={() => handleSetActiveSong(item)}
+                                                            className="text-[10px] bg-neon-pink/10 hover:bg-neon-pink/30 text-neon-pink border border-neon-pink/30 px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-all"
+                                                        >
+                                                            Poner como Activa
+                                                        </button>
+                                                    )}
+                                                    <button onClick={() => handleDelete('music', item.id, item.url)} className="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white p-2 rounded-lg transition-colors flex-shrink-0">
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </section>
                         )}
