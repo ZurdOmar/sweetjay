@@ -77,7 +77,13 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
 
         const mConfig = eventsInfoSnapshot.docs.find(d => d.id === 'musicConfig');
         if (mConfig) {
-          setActiveSong(mConfig.data());
+          const newData = mConfig.data();
+          setActiveSong((prev: any) => {
+            if (prev.songUrl === newData.songUrl && prev.songName === newData.songName) {
+              return prev;
+            }
+            return newData;
+          });
         }
       } catch (error) {
         console.error("Error fetching dynamic data:", error);

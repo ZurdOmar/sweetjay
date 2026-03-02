@@ -34,13 +34,9 @@ export const MusicPlayer = forwardRef<MusicPlayerHandle, MusicPlayerProps>((prop
         const audio = audioRef.current;
         if (!audio) return;
 
-        // Configuration inicial
+        // Configuración inicial equilibrada
         audio.volume = 1.0;
-
-        // Atributo muted inicial para ayudar al navegador a precargar
-        audio.muted = true;
-        setIsMuted(true);
-
+        
     }, []);
 
     const togglePlay = () => {
