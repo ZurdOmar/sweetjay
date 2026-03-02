@@ -22,6 +22,7 @@ export const Admin = () => {
     const [eventsList, setEventsList] = useState<any[]>([]);
     const [videosList, setVideosList] = useState<any[]>([]);
     const [adsList, setAdsList] = useState<any[]>([]);
+    const [messagesList, setMessagesList] = useState<any[]>([]);
     const [activeSongConfig, setActiveSongConfig] = useState<any>(null);
     const [eventsInfo, setEventsInfo] = useState<any>({ title: 'Tour 2025', description: 'Prepárate para vivir la experiencia de Sweetjay en vivo. Nuevas fechas, nuevos shows y toda la energía del género urbano.', footer: 'Próximamente más fechas...' });
     const [bioInfo, setBioInfo] = useState<any>({
@@ -112,7 +113,8 @@ export const Admin = () => {
             fetchCollection('music', setMusicList),
             fetchCollection('events', setEventsList),
             fetchCollection('videos', setVideosList),
-            fetchCollection('ads', setAdsList)
+            fetchCollection('ads', setAdsList),
+            fetchCollection('messages', setMessagesList)
         ]);
 
         // Fetch events info
@@ -142,7 +144,7 @@ export const Admin = () => {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const authorizedEmails = ['morentinomar@gmail.com', 'jeranmp8@gmail.com'];
+        const authorizedEmails = ['morentinomar@gmail.com', 'jeranmp@gmail.com'];
         if (!authorizedEmails.includes(email)) {
             setMessage('Acceso denegado: Correo no autorizado.');
             return;
@@ -393,6 +395,59 @@ export const Admin = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {/* Messages Panel */}
+                    <div className="bg-dark-card p-6 rounded-2xl border border-neon-pink/40 flex flex-col items-center text-center col-span-1 md:col-span-2 lg:col-span-3 shadow-[0_0_20px_rgba(255,0,127,0.1)]">
+                        <Megaphone size={48} className="text-neon-pink mb-4" />
+                        <h3 className="font-bold text-xl mb-2 text-neon-pink">Buzón de Mensajes ({messagesList.length})</h3>
+                        <p className="text-sm text-gray-400 mb-6">Mensajes recibidos a través del formulario de contacto.</p>
+
+                        <div className="w-full space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar text-left">
+                            {messagesList.length > 0 ? (
+                                messagesList.map((msg) => (
+                                    <div key={msg.id} className="bg-white/5 border border-white/10 p-5 rounded-xl relative group hover:border-neon-pink/30 transition-colors">
+                                        <button
+                                            onClick={() => handleDelete('messages', msg.id)}
+                                            className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition-colors"
+                                            title="Eliminar mensaje"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3 pb-3 border-b border-white/5">
+                                            <div>
+                                                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Remitente</p>
+                                                <p className="text-neon-pink font-bold">{msg.name}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Email</p>
+                                                <a href={`mailto:${msg.email}`} className="text-blue-400 text-sm hover:underline">{msg.email}</a>
+                                            </div>
+                                        </div>
+                                        <div className="mb-3">
+                                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Mensaje</p>
+                                            <p className="text-gray-200 text-sm whitespace-pre-wrap leading-relaxed">{msg.message}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Enviado el</p>
+                                            <p className="text-gray-400 text-[10px] italic">
+                                                {msg.createdAt ? new Date(msg.createdAt).toLocaleString('es-MX', {
+                                                    day: '2-digit',
+                                                    month: 'long',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                }) : 'Fecha desconocida'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-10 text-gray-500 border border-dashed border-white/10 rounded-xl">
+                                    No hay mensajes nuevos en el buzón.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Photos Upload */}
                     <div className="bg-dark-card p-6 rounded-2xl border border-white/10 flex flex-col items-center text-center">
                         <ImageIcon size={48} className="text-neon-pink mb-4" />
