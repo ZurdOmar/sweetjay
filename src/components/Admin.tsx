@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { auth, storage, db } from '../firebase';
 import { sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged, signOut } from 'firebase/auth';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
-import { collection, addDoc, getDocs, query, deleteDoc, doc, setDoc } from 'firebase/firestore';
-import { LogIn, LogOut, Upload, Image as ImageIcon, Music as MusicIcon, Calendar, CheckCircle2, Youtube, Megaphone, Trash2, RefreshCw } from 'lucide-react';
+import { collection, addDoc, getDocs, query, deleteDoc, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { LogIn, LogOut, Upload, Image as ImageIcon, Music as MusicIcon, Calendar, CheckCircle2, Youtube, Megaphone, Trash2, RefreshCw, MessageSquare } from 'lucide-react';
 
 export const Admin = () => {
     const [user, setUser] = useState<any>(null);
@@ -21,10 +21,13 @@ export const Admin = () => {
     const [eventsList, setEventsList] = useState<any[]>([]);
     const [videosList, setVideosList] = useState<any[]>([]);
     const [adsList, setAdsList] = useState<any[]>([]);
+    const [promotionsList, setPromotionsList] = useState<any[]>([]);
+    const [messagesList, setMessagesList] = useState<any[]>([]);
+    const [activePromoId, setActivePromoId] = useState<string | null>(null);
     const [eventsInfo, setEventsInfo] = useState<any>({ title: 'Tour 2025', description: 'Prepárate para vivir la experiencia de Sweetjay en vivo. Nuevas fechas, nuevos shows y toda la energía del género urbano.', footer: 'Próximamente más fechas...' });
     const [bioInfo, setBioInfo] = useState<any>({
         title: 'Originario de Colima, 27 años',
-        content: `Sweetjay es un apasionado de la música y la expresión artística desde temprana edad. Inspirado por la necesidad de expresar sus sentimientos a través de melodías. Debuta con un EP **“MY ESSENCE”** producido por Yacknees en octubre del 2023.\n\nMiembro activo de **Flow312**, plataforma dedicada a promover el talento urbano colimense. Ha participado en ediciones exitosas de festivales urbanos y eventos locales de trap.`,
+        content: `Sweetjay es un apasionado de la música y la expresión artística desde temprana edad.Inspirado por la necesidad de expresar sus sentimientos a través de melodías.Debuta con un EP **“MY ESSENCE”** producido por Yacknees en octubre del 2023.\n\nMiembro activo de ** Flow312 **, plataforma dedicada a promover el talento urbano colimense.Ha participado en ediciones exitosas de festivales urbanos y eventos locales de trap.`,
         highlights: [
             { title: 'Logros', content: '• Composición "Dos Locos" - Grupo Cañaveral (2019)\n• Colaboración con Armando Gómez (Latin Grammy)\n• Ranking Top #10 Radio 91.7 (2024)\n• Participación en "Colimán" con Antiwa', iconType: 'star' },
             { title: 'Impacto', content: 'Difusión de artistas locales y organización de eventos como Elixir vol1/vol2 y Flow312 Forum DMT.', iconType: 'disc' }
@@ -43,6 +46,10 @@ export const Admin = () => {
         // Check if the user is returning from the email link
         if (isSignInWithEmailLink(auth, window.location.href) && !authProcessed.current) {
             authProcessed.current = true;
+            const savedEmail = window.localStorage.getItem('emailForSignIn');
+            if (savedEmail) {
+                setTempEmail(savedEmail);
+            }
             // Always show the custom form to confirm email (security/privacy as requested)
             setConfirmEmailNeeded(true);
         }
@@ -57,10 +64,16 @@ export const Admin = () => {
         setLoading(true);
         try {
             await signInWithEmailLink(auth, tempEmail, window.location.href);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            window.localStorage.removeItem('emailForSignIn');
             setConfirmEmailNeeded(false);
             setMessage('¡Sesión iniciada con éxito!');
         } catch (error: any) {
-            setMessage('Error: ' + error.message);
+            if (error.code === 'auth/invalid-action-code') {
+                setMessage('Error: El enlace expiró o ya fue usado. Vuelve al inicio y solicita uno nuevo.');
+            } else {
+                setMessage('Error: ' + error.message);
+            }
         } finally {
             setLoading(false);
         }
@@ -76,17 +89,20 @@ export const Admin = () => {
                 const q = query(collection(db, colName));
                 const snapshot = await getDocs(q);
                 const docsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log(`Colección ${colName} obtenida con ${docsData.length} registros:`, docsData);
-                // Sort client-side to avoid missing index errors in Firestore
+                console.log(`Colección ${colName} obtenida con ${docsData.length} registros: `, docsData);
+                // Sort client-side
                 docsData.sort((a: any, b: any) => {
+                    if (colName === 'carousel' && (a.order !== undefined || b.order !== undefined)) {
+                        return (a.order || 0) - (b.order || 0);
+                    }
                     const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
                     const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
                     return dateB - dateA; // Descending
                 });
                 setter(docsData);
             } catch (err: any) {
-                console.error(`Error crítico al cargar la colección ${colName}:`, err);
-                setMessage((prev) => prev ? `${prev} | Error en ${colName}: ${err.message}` : `Error al cargar ${colName}: ${err.message}`);
+                console.error(`Error crítico al cargar la colección ${colName}: `, err);
+                setMessage((prev) => prev ? `${prev} | Error en ${colName}: ${err.message} ` : `Error al cargar ${colName}: ${err.message} `);
             }
         };
 
@@ -97,10 +113,21 @@ export const Admin = () => {
             fetchCollection('music', setMusicList),
             fetchCollection('events', setEventsList),
             fetchCollection('videos', setVideosList),
-            fetchCollection('ads', setAdsList)
+            fetchCollection('ads', setAdsList),
+            fetchCollection('promotions', setPromotionsList),
+            fetchCollection('messages', setMessagesList),
+            (async () => {
+                try {
+                    const snap = await getDocs(collection(db, 'settings'));
+                    const activeDoc = snap.docs.find(d => d.id === 'activePromotion');
+                    if (activeDoc) setActivePromoId(activeDoc.data().id);
+                } catch (err) {
+                    console.error('Error fetching settings:', err);
+                }
+            })()
         ]);
 
-        // Fetch events info
+        // Fetch events info and bio info (settings documents)
         try {
             const settingsDocs = await getDocs(query(collection(db, 'settings')));
             const evInfo = settingsDocs.docs.find(d => d.id === 'eventsInfo');
@@ -139,7 +166,8 @@ export const Admin = () => {
             };
 
             await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-            setMessage(`¡Enlace enviado! Revisa la bandeja de entrada de ${email}`);
+            window.localStorage.setItem('emailForSignIn', email);
+            setMessage(`¡Enlace enviado! Revisa la bandeja de entrada de ${email} `);
         } catch (error: any) {
             setMessage('Error: ' + error.message);
         }
@@ -230,11 +258,20 @@ export const Admin = () => {
             },
             async () => {
                 const url = await getDownloadURL(uploadTask.snapshot.ref);
-                // Store metadata in Firestore if needed
+
+                let order = Date.now();
+                if (folder === 'carousel') {
+                    // Try to put it at the end
+                    order = carouselList.length > 0
+                        ? Math.max(...carouselList.map(i => i.order || 0)) + 1
+                        : 1;
+                }
+
                 await addDoc(collection(db, folder), {
                     url,
                     name: file.name,
                     createdAt: new Date().toISOString(),
+                    order,
                     type: folder === 'images' ? 'gallery' : (folder === 'carousel' ? 'carousel' : 'other')
                 });
                 setMessage(`¡Archivo ${file.name} subido con éxito!`);
@@ -265,6 +302,81 @@ export const Admin = () => {
             refreshData();
         } catch (error: any) {
             setMessage('Error al borrar: ' + error.message);
+        }
+        setUploading(false);
+    };
+
+    const handleSetActivePromotion = async (promo: any) => {
+        setUploading(true);
+        try {
+            await setDoc(doc(db, 'settings', 'activePromotion'), {
+                id: promo.id,
+                url: promo.url,
+                active: true,
+                updatedAt: new Date().toISOString()
+            });
+            setActivePromoId(promo.id);
+            setMessage('Pop-up de promoción activado.');
+        } catch (error: any) {
+            setMessage('Error al activar: ' + error.message);
+        }
+        setUploading(false);
+    };
+
+    const handleMoveOrder = async (item: any, direction: 'up' | 'down') => {
+        const index = carouselList.findIndex(i => i.id === item.id);
+        if (index === -1) return;
+
+        const newIndex = direction === 'up' ? index - 1 : index + 1;
+        if (newIndex < 0 || newIndex >= carouselList.length) return;
+
+        const otherItem = carouselList[newIndex];
+
+        setUploading(true);
+        try {
+            // Swap orders
+            const tempOrder = item.order || index;
+            const otherOrder = otherItem.order || newIndex;
+
+            await updateDoc(doc(db, 'carousel', item.id), { order: otherOrder });
+            await updateDoc(doc(db, 'carousel', otherItem.id), { order: tempOrder });
+
+            setMessage('Orden actualizado.');
+            refreshData();
+        } catch (error: any) {
+            setMessage('Error al mover: ' + error.message);
+        }
+        setUploading(false);
+    };
+
+    const handleToggleCarousel = async (item: any, source: 'images' | 'carousel') => {
+        const target = source === 'images' ? 'carousel' : 'images';
+        if (!window.confirm(`¿Mover esta imagen a ${target === 'carousel' ? 'el Carrusel' : 'la Galería'}?`)) return;
+
+        setUploading(true);
+        try {
+            // 1. Add to target
+            const newItem = {
+                ...item,
+                type: target === 'carousel' ? 'carousel' : 'gallery',
+                updatedAt: new Date().toISOString()
+            };
+            if (target === 'carousel') {
+                newItem.order = carouselList.length + 1;
+            } else {
+                delete newItem.order;
+            }
+
+            const { id, ...dataForNewDoc } = newItem;
+            await addDoc(collection(db, target), dataForNewDoc);
+
+            // 2. Delete from source
+            await deleteDoc(doc(db, source, item.id));
+
+            setMessage(`Imagen movida a ${target === 'carousel' ? 'Carrusel' : 'Galería'}.`);
+            refreshData();
+        } catch (error: any) {
+            setMessage('Error al mover: ' + error.message);
         }
         setUploading(false);
     };
@@ -334,9 +446,18 @@ export const Admin = () => {
             <div className="max-w-4xl mx-auto">
                 <div className="flex justify-between items-center mb-12">
                     <h1 className="text-3xl font-bold text-neon-pink">Admin Dashboard</h1>
-                    <button onClick={handleLogout} className="flex items-center gap-2 text-gray-400 hover:text-white">
-                        <LogOut size={20} /> Salir
-                    </button>
+                    <div className="flex gap-4">
+                        {/* Temporary Bypass Button for testing - REMOVE AFTER VERIFICATION */}
+                        <button
+                            onClick={() => setUser({ email: 'test@sweetjay.com', uid: 'test-uid' })}
+                            className="text-[10px] text-gray-800 hover:text-gray-600"
+                        >
+                            [DEV BYPASS]
+                        </button>
+                        <button onClick={handleLogout} className="flex items-center gap-2 text-gray-400 hover:text-white">
+                            <LogOut size={20} /> Salir
+                        </button>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -575,6 +696,28 @@ export const Admin = () => {
                             <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'carousel')} />
                         </label>
                     </div>
+
+                    {/* Promo Pop-up Management */}
+                    <div className="bg-dark-card p-6 rounded-2xl border border-white/10 flex flex-col items-center text-center shadow-lg border-white/20">
+                        <Megaphone size={48} className="text-neon-pink mb-4" />
+                        <h3 className="font-bold mb-2 text-white">PROMO POP-UP (Entrada)</h3>
+                        <p className="text-sm text-gray-400 mb-6 font-bold">Imagen que aparece al entrar a la página.</p>
+                        <label className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg cursor-pointer transition-colors border border-white/10 w-full text-white font-bold">
+                            <Upload size={16} className="inline mr-2" /> Subir Nueva Promo
+                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'promotions')} />
+                        </label>
+                    </div>
+
+                    {/* General Gallery Photos Management */}
+                    <div className="bg-dark-card p-6 rounded-2xl border border-white/10 flex flex-col items-center text-center">
+                        <ImageIcon size={48} className="text-neon-pink mb-4" />
+                        <h3 className="font-bold mb-2">Fotos Galería</h3>
+                        <p className="text-sm text-gray-400 mb-6">Sube fotos generales para la sección de Galería.</p>
+                        <label className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg cursor-pointer transition-colors border border-white/10 w-full">
+                            <Upload size={16} className="inline mr-2" /> Subir a Galería
+                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'images')} />
+                        </label>
+                    </div>
                 </div>
 
                 {uploading && (
@@ -617,6 +760,36 @@ export const Admin = () => {
                     </div>
 
                     <div className="space-y-12">
+                        {/* Messages List - MOVING TO TOP FOR BETTER VISIBILITY */}
+                        {messagesList.length > 0 && (
+                            <section className="bg-neon-pink/5 p-6 rounded-2xl border border-neon-pink/20">
+                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-neon-pink font-black uppercase tracking-widest">
+                                    <MessageSquare size={24} /> Muro de Fans / Mensajes ({messagesList.length})
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {messagesList.map((item) => (
+                                        <div key={item.id} className="bg-dark-card border border-white/10 rounded-xl p-4 relative group hover:border-neon-pink/30 transition-all">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div>
+                                                    <p className="font-bold text-neon-pink">{item.name || 'Anónimo'}</p>
+                                                    <p className="text-[10px] text-gray-500">
+                                                        {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'Sin fecha'}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleDelete('messages', item.id)}
+                                                    className="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white p-2 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                                    title="Borrar mensaje"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                            <p className="text-sm text-gray-300 italic leading-relaxed">"{item.message}"</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
                         {/* Ads / Banners List */}
                         {adsList.length > 0 && (
                             <section>
@@ -634,17 +807,85 @@ export const Admin = () => {
                             </section>
                         )}
 
+                        {/* Promo Pop-up List */}
+                        {promotionsList.length > 0 && (
+                            <section>
+                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Megaphone size={20} className="text-neon-pink" /> Promociones Pop-up ({promotionsList.length})</h3>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {promotionsList.map((item) => (
+                                        <div key={item.id} className={`relative group bg-dark-card border rounded-lg overflow-hidden ${activePromoId === item.id ? 'border-neon-pink ring-2 ring-neon-pink/50' : 'border-white/10'}`}>
+                                            <img src={item.url} alt={item.name} className="w-full h-40 object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                            {activePromoId === item.id && (
+                                                <div className="absolute top-2 left-2 bg-neon-pink text-black text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
+                                                    ACTIVO
+                                                </div>
+                                            )}
+                                            <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                                <button onClick={() => handleDelete('promotions', item.id, item.url)} className="bg-red-600/80 hover:bg-red-600 text-white p-2 rounded-full" title="Borrar">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                                {activePromoId !== item.id && (
+                                                    <button onClick={() => handleSetActivePromotion(item)} className="bg-neon-pink/80 hover:bg-neon-pink text-black p-2 rounded-full" title="Activar Pop-up">
+                                                        <RefreshCw size={16} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
                         {/* Carousel Photos List */}
                         {carouselList.length > 0 && (
                             <section>
-                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-neon-pink"><RefreshCw size={20} /> Fotos en Carrusel Principal ({carouselList.length})</h3>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {carouselList.map((item) => (
-                                        <div key={item.id} className="relative group bg-dark-card border border-neon-pink/20 rounded-lg overflow-hidden ring-1 ring-neon-pink/10">
-                                            <img src={item.url} alt={item.name} className="w-full h-40 object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                                            <button onClick={() => handleDelete('carousel', item.id, item.url)} className="absolute top-2 right-2 bg-red-600/80 hover:bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" title="Borrar">
-                                                <Trash2 size={16} />
-                                            </button>
+                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-neon-pink font-black uppercase tracking-widest">
+                                    <RefreshCw size={24} /> Fotos Principal / Carrusel ({carouselList.length})
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                                    {carouselList.map((item, idx) => (
+                                        <div key={item.id} className="relative group bg-dark-card border border-neon-pink/30 rounded-2xl overflow-hidden shadow-lg shadow-neon-pink/5">
+                                            <img src={item.url} alt={item.name} className="w-full h-48 object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
+
+                                            {/* Order Controls */}
+                                            <div className="absolute top-2 left-2 flex gap-1 z-10">
+                                                <button
+                                                    onClick={() => handleMoveOrder(item, 'up')}
+                                                    disabled={idx === 0}
+                                                    className="bg-black/60 hover:bg-neon-pink text-white hover:text-black p-1.5 rounded-lg transition-all disabled:opacity-20"
+                                                    title="Mover Arriba"
+                                                >
+                                                    <Upload size={14} className="rotate-0" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleMoveOrder(item, 'down')}
+                                                    disabled={idx === carouselList.length - 1}
+                                                    className="bg-black/60 hover:bg-neon-pink text-white hover:text-black p-1.5 rounded-lg transition-all disabled:opacity-20"
+                                                    title="Mover Abajo"
+                                                >
+                                                    <Upload size={14} className="rotate-180" />
+                                                </button>
+                                            </div>
+
+                                            <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all z-10">
+                                                <button
+                                                    onClick={() => handleDelete('carousel', item.id, item.url)}
+                                                    className="bg-red-600 hover:bg-red-500 text-white p-2.5 rounded-xl shadow-lg"
+                                                    title="Borrar permanentemente"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleToggleCarousel(item, 'carousel')}
+                                                    className="bg-white hover:bg-gray-200 text-black p-2.5 rounded-xl shadow-lg"
+                                                    title="Bajar a Galería"
+                                                >
+                                                    <ImageIcon size={18} />
+                                                </button>
+                                            </div>
+                                            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                                                <p className="text-[10px] text-neon-pink font-black uppercase tracking-tighter truncate">Posición: {idx + 1}</p>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -671,14 +912,27 @@ export const Admin = () => {
                         {/* Photos/Gallery List */}
                         {imagesList.length > 0 && (
                             <section>
-                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><ImageIcon size={20} className="text-neon-pink" /> Fotos en Galería ({imagesList.length})</h3>
-                                <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-white font-black uppercase tracking-widest">
+                                    <ImageIcon size={24} className="text-neon-pink" /> Fotos en Galería ({imagesList.length})
+                                </h3>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
                                     {imagesList.map((item) => (
-                                        <div key={item.id} className="relative group bg-dark-card border border-white/10 rounded-lg overflow-hidden">
-                                            <img src={item.url} alt={item.name} className="w-full h-24 object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
-                                            <button onClick={() => handleDelete('images', item.id, item.url)} className="absolute top-1 right-1 bg-red-600/80 hover:bg-red-600 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" title="Borrar">
-                                                <Trash2 size={14} />
-                                            </button>
+                                        <div key={item.id} className="relative group bg-dark-card border border-white/10 rounded-xl overflow-hidden group hover:border-white/30 transition-all">
+                                            <img src={item.url} alt={item.name} className="w-full h-32 object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                                                <button
+                                                    onClick={() => handleToggleCarousel(item, 'images')}
+                                                    className="bg-neon-pink text-black p-2 rounded-lg font-bold text-[10px] flex items-center gap-1 hover:scale-105 transition-transform"
+                                                >
+                                                    <RefreshCw size={12} /> AL CARRUSEL
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete('images', item.id, item.url)}
+                                                    className="bg-red-600 text-white p-2 rounded-lg hover:bg-red-500 transition-colors"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -720,6 +974,8 @@ export const Admin = () => {
                                 </div>
                             </section>
                         )}
+
+
 
                         {!loadingData && carouselList.length === 0 && (
                             <p className="text-center text-gray-500 py-4 bg-white/5 rounded-xl border border-dashed border-white/10">

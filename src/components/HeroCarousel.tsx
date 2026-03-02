@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query } from 'firebase/firestore';
 
 export function HeroCarousel() {
     const [images, setImages] = useState<string[]>([]);
@@ -11,12 +11,29 @@ export function HeroCarousel() {
     useEffect(() => {
         const fetchImages = async () => {
             try {
-                const q = query(collection(db, 'carousel'), orderBy('createdAt', 'desc'), limit(5));
+                const q = query(collection(db, 'carousel')); // Fetch all to sort in memory for robust field fallback
                 const querySnapshot = await getDocs(q);
-                const fetchedImages = querySnapshot.docs.map(doc => doc.data().url);
+                const fetchedDocs = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                })) as any[];
 
-                if (fetchedImages.length > 0) {
-                    setImages(fetchedImages);
+                // Sort in memory: 'order' ascending (fallback to 999 if missing), then 'createdAt' descending
+                const sortedImages = fetchedDocs
+                    .sort((a, b) => {
+                        const orderA = a.order !== undefined ? a.order : 999;
+                        const orderB = b.order !== undefined ? b.order : 999;
+                        if (orderA !== orderB) return orderA - orderB;
+
+                        const timeA = a.createdAt?.seconds || 0;
+                        const timeB = b.createdAt?.seconds || 0;
+                        return timeB - timeA;
+                    })
+                    .slice(0, 15) // Limit to 15
+                    .map(doc => doc.url);
+
+                if (sortedImages.length > 0) {
+                    setImages(sortedImages);
                 } else {
                     // Fallback to static images if no images in Firebase
                     setImages([

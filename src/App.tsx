@@ -10,14 +10,17 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Admin } from './components/Admin';
 import { Music as DiscIcon, Star, MapPin, Megaphone } from 'lucide-react';
 import { db } from './firebase';
-import { collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, orderBy, limit, doc, onSnapshot } from 'firebase/firestore';
+import { PromotionModal } from './components/PromotionModal';
+import { PromotionBanner } from './components/PromotionBanner';
 
-function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPlayerHandle | null> }) {
+function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObject<MusicPlayerHandle | null>, showIntro: boolean }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactMessage, setContactMessage] = useState('');
   const [contactStatus, setContactStatus] = useState('');
+  const [activePromotion, setActivePromotion] = useState<any>(null);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -79,6 +82,19 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
     };
 
     fetchDynamicData();
+  }, []);
+
+  // Use onSnapshot to monitor active promotion changes in real-time
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'settings', 'activePromotion'), (snapshot) => {
+      if (snapshot.exists()) {
+        setActivePromotion(snapshot.data());
+      } else {
+        setActivePromotion(null);
+      }
+    });
+
+    return () => unsub();
   }, []);
 
   const handleContactSubmit = async (e: FormEvent) => {
@@ -153,7 +169,7 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
                 {['Inicio', 'Música', 'Eventos', 'Videos', 'Galería', 'Bio', 'Contacto'].map((item) => (
                   <a
                     key={item}
-                    href={`#${item.toLowerCase()}`}
+                    href={`#${item.toLowerCase().replace(' ', '-')}`}
                     onClick={() => setIsMenuOpen(false)}
                     className="block px-3 py-4 rounded-md text-base font-bold uppercase text-center hover:bg-white/5 hover:text-neon-pink"
                   >
@@ -658,6 +674,8 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
         </div>
       </section>
 
+
+
       {/* Footer */}
       <footer className="py-12 border-t border-white/10 bg-black text-center flex flex-col items-center gap-6">
         <div className="flex flex-col items-center gap-4">
@@ -676,7 +694,14 @@ function MainSite({ musicPlayerRef }: { musicPlayerRef: React.RefObject<MusicPla
         </div>
       </footer>
 
-      {/* Promotional Banner Overlay */}
+      {activePromotion?.url && (
+        <>
+          <PromotionModal promotion={activePromotion} trigger={!showIntro} />
+          <PromotionBanner promotion={activePromotion} />
+        </>
+      )}
+
+      {/* Promotional Banner Overlay (Old/Alternative) */}
       <AnimatePresence>
         {
           firebaseAds.length > 0 && showAd && (
@@ -728,7 +753,7 @@ function App() {
             <AnimatePresence>
               {showIntro && <Intro onEnter={handleEnter} />}
             </AnimatePresence>
-            <MainSite musicPlayerRef={musicPlayerRef} />
+            <MainSite musicPlayerRef={musicPlayerRef} showIntro={showIntro} />
           </div>
         } />
       </Routes>

@@ -1,0 +1,19 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Función para validar si el usuario es un administrador autorizado
+    function isAdmin() {
+      return request.auth != null && 
+             (request.auth.token.email == 'morentinomar@gmail.com' || request.auth.token.email == 'jeranmp@gmail.com');
+    }
+
+    match /{allPaths=**} {
+      // Cualquiera puede leer (descargar música, ver imágenes)
+      allow read: if true;
+      
+      // SOLO los administradores pueden subir, modificar o borrar archivos
+      allow write: if isAdmin();
+    }
+  }
+}
