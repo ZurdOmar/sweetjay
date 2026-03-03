@@ -154,7 +154,7 @@ export const Admin = () => {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const authorizedEmails = ['morentinomar@gmail.com', 'jeranmp8@gmail.com'];
+        const authorizedEmails = ['morentinomar@gmail.com', 'jeranmp@gmail.com'];
         if (!authorizedEmails.includes(email)) {
             setMessage('Acceso denegado: Correo no autorizado.');
             return;
