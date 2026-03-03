@@ -298,6 +298,12 @@ export const Admin = () => {
                 await deleteObject(fileRef);
             }
 
+            // If we are deleting a promotion and it is the currently active one, clear the active promotion setting
+            if (collectionName === 'promotions' && id === activePromoId) {
+                await deleteDoc(doc(db, 'settings', 'activePromotion'));
+                setActivePromoId(null);
+            }
+
             setMessage('Elemento borrado con éxito.');
             refreshData();
         } catch (error: any) {
@@ -760,12 +766,12 @@ export const Admin = () => {
                     </div>
 
                     <div className="space-y-12">
-                        {/* Messages List - MOVING TO TOP FOR BETTER VISIBILITY */}
-                        {messagesList.length > 0 && (
-                            <section className="bg-neon-pink/5 p-6 rounded-2xl border border-neon-pink/20">
-                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-neon-pink font-black uppercase tracking-widest">
-                                    <MessageSquare size={24} /> Muro de Fans / Mensajes ({messagesList.length})
-                                </h3>
+                        {/* Messages List - ALWAYS SHOW HEADER */}
+                        <section className="bg-neon-pink/5 p-6 rounded-2xl border border-neon-pink/20">
+                            <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-neon-pink font-black uppercase tracking-widest">
+                                <MessageSquare size={24} /> Muro de Fans / Mensajes ({messagesList.length})
+                            </h3>
+                            {messagesList.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {messagesList.map((item) => (
                                         <div key={item.id} className="bg-dark-card border border-white/10 rounded-xl p-4 relative group hover:border-neon-pink/30 transition-all">
@@ -788,12 +794,15 @@ export const Admin = () => {
                                         </div>
                                     ))}
                                 </div>
-                            </section>
-                        )}
+                            ) : (
+                                <p className="text-gray-400 italic">No hay mensajes en el muro.</p>
+                            )}
+                        </section>
+
                         {/* Ads / Banners List */}
-                        {adsList.length > 0 && (
-                            <section>
-                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Megaphone size={20} className="text-neon-pink" /> Anuncios / Banners Promocionales ({adsList.length})</h3>
+                        <section>
+                            <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Megaphone size={20} className="text-neon-pink" /> Anuncios / Banners Promocionales ({adsList.length})</h3>
+                            {adsList.length > 0 ? (
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {adsList.map((item) => (
                                         <div key={item.id} className="relative group bg-dark-card border border-white/10 rounded-lg overflow-hidden">
@@ -804,13 +813,31 @@ export const Admin = () => {
                                         </div>
                                     ))}
                                 </div>
-                            </section>
-                        )}
+                            ) : (
+                                <p className="text-gray-400 italic">No hay banners publicados.</p>
+                            )}
+                        </section>
 
                         {/* Promo Pop-up List */}
-                        {promotionsList.length > 0 && (
-                            <section>
-                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Megaphone size={20} className="text-neon-pink" /> Promociones Pop-up ({promotionsList.length})</h3>
+                        <section>
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-xl font-bold flex items-center gap-2"><Megaphone size={20} className="text-neon-pink" /> Promociones Pop-up ({promotionsList.length})</h3>
+                                {activePromoId && (
+                                    <button
+                                        onClick={async () => {
+                                            setUploading(true);
+                                            await deleteDoc(doc(db, 'settings', 'activePromotion'));
+                                            setActivePromoId(null);
+                                            setMessage('Promoción desactivada.');
+                                            setUploading(false);
+                                        }}
+                                        className="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-all"
+                                    >
+                                        DESACTIVAR PROMO ACTUAL
+                                    </button>
+                                )}
+                            </div>
+                            {promotionsList.length > 0 ? (
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {promotionsList.map((item) => (
                                         <div key={item.id} className={`relative group bg-dark-card border rounded-lg overflow-hidden ${activePromoId === item.id ? 'border-neon-pink ring-2 ring-neon-pink/50' : 'border-white/10'}`}>
@@ -833,15 +860,17 @@ export const Admin = () => {
                                         </div>
                                     ))}
                                 </div>
-                            </section>
-                        )}
+                            ) : (
+                                <p className="text-gray-400 italic">No hay promociones cargadas.</p>
+                            )}
+                        </section>
 
                         {/* Carousel Photos List */}
-                        {carouselList.length > 0 && (
-                            <section>
-                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-neon-pink font-black uppercase tracking-widest">
-                                    <RefreshCw size={24} /> Fotos Principal / Carrusel ({carouselList.length})
-                                </h3>
+                        <section>
+                            <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-neon-pink font-black uppercase tracking-widest">
+                                <RefreshCw size={24} /> Fotos Principal / Carrusel ({carouselList.length})
+                            </h3>
+                            {carouselList.length > 0 ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                                     {carouselList.map((item, idx) => (
                                         <div key={item.id} className="relative group bg-dark-card border border-neon-pink/30 rounded-2xl overflow-hidden shadow-lg shadow-neon-pink/5">
@@ -889,8 +918,10 @@ export const Admin = () => {
                                         </div>
                                     ))}
                                 </div>
-                            </section>
-                        )}
+                            ) : (
+                                <p className="text-gray-400 italic">No hay fotos en el carrusel principal.</p>
+                            )}
+                        </section>
 
                         {/* Events List */}
                         {eventsList.length > 0 && (

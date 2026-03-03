@@ -704,7 +704,7 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
       {/* Promotional Banner Overlay (Old/Alternative) */}
       <AnimatePresence>
         {
-          firebaseAds.length > 0 && showAd && (
+          firebaseAds.length > 0 && firebaseAds[0]?.url && showAd && (
             <motion.div
               initial={{ opacity: 0, y: 100 }}
               animate={{ opacity: 1, y: 0 }}
