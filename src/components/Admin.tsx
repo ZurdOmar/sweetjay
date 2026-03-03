@@ -24,6 +24,7 @@ export const Admin = () => {
     const [promotionsList, setPromotionsList] = useState<any[]>([]);
     const [messagesList, setMessagesList] = useState<any[]>([]);
     const [activePromoId, setActivePromoId] = useState<string | null>(null);
+    const [activeMusicId, setActiveMusicId] = useState<string | null>(null);
     const [eventsInfo, setEventsInfo] = useState<any>({ title: 'Tour 2025', description: 'Prepárate para vivir la experiencia de Sweetjay en vivo. Nuevas fechas, nuevos shows y toda la energía del género urbano.', footer: 'Próximamente más fechas...' });
     const [bioInfo, setBioInfo] = useState<any>({
         title: 'Originario de Colima, 27 años',
@@ -119,8 +120,10 @@ export const Admin = () => {
             (async () => {
                 try {
                     const snap = await getDocs(collection(db, 'settings'));
-                    const activeDoc = snap.docs.find(d => d.id === 'activePromotion');
-                    if (activeDoc) setActivePromoId(activeDoc.data().id);
+                    const activePromoDoc = snap.docs.find(d => d.id === 'activePromotion');
+                    if (activePromoDoc) setActivePromoId(activePromoDoc.data().id);
+                    const activeMusicDoc = snap.docs.find(d => d.id === 'activeMusic');
+                    if (activeMusicDoc) setActiveMusicId(activeMusicDoc.data().id);
                 } catch (err) {
                     console.error('Error fetching settings:', err);
                 }
@@ -293,6 +296,23 @@ export const Admin = () => {
         );
     };
 
+    const handleActivateMusic = async (musicDoc: any) => {
+        setUploading(true);
+        try {
+            await setDoc(doc(db, 'settings', 'activeMusic'), {
+                id: musicDoc.id,
+                url: musicDoc.url,
+                name: musicDoc.name || 'Pista de audio',
+                updatedAt: new Date().toISOString()
+            });
+            setActiveMusicId(musicDoc.id);
+            setMessage(`¡Música "${musicDoc.name || 'Pista de audio'}" activada!`);
+        } catch (error: any) {
+            setMessage('Error al activar música: ' + error.message);
+        }
+        setUploading(false);
+    };
+
     const handleDelete = async (collectionName: string, id: string, fileUrl?: string) => {
         if (!window.confirm("¿Estás seguro de que quieres borrar este elemento permanentemente?")) return;
 
@@ -313,6 +333,11 @@ export const Admin = () => {
             if (collectionName === 'promotions' && id === activePromoId) {
                 await deleteDoc(doc(db, 'settings', 'activePromotion'));
                 setActivePromoId(null);
+            }
+
+            if (collectionName === 'music' && id === activeMusicId) {
+                await deleteDoc(doc(db, 'settings', 'activeMusic'));
+                setActiveMusicId(null);
             }
 
             setMessage('Elemento borrado con éxito.');
@@ -1006,11 +1031,26 @@ export const Admin = () => {
                                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><MusicIcon size={20} className="text-neon-pink" /> Música MP3 ({musicList.length})</h3>
                                 <div className="space-y-3">
                                     {musicList.map((item) => (
-                                        <div key={item.id} className="flex justify-between items-center bg-dark-card border border-white/10 rounded-lg p-3">
-                                            <span className="text-sm font-medium truncate mr-4">{item.name || "Pista de audio"}</span>
-                                            <button onClick={() => handleDelete('music', item.id, item.url)} className="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white p-2 rounded-lg transition-colors flex-shrink-0">
-                                                <Trash2 size={16} />
-                                            </button>
+                                        <div key={item.id} className="flex justify-between items-center bg-dark-card border border-white/10 rounded-lg p-3 gap-2">
+                                            <span className="text-sm font-medium truncate flex-grow mr-2 text-white">{item.name || "Pista de audio"}</span>
+
+                                            <div className="flex items-center gap-2 flex-shrink-0">
+                                                {activeMusicId === item.id ? (
+                                                    <span className="inline-flex items-center gap-1 bg-neon-pink/20 text-neon-pink px-3 py-1.5 rounded-lg text-xs font-bold border border-neon-pink/50">
+                                                        <CheckCircle2 size={14} /> ACTIVA
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleActivateMusic(item)}
+                                                        className="bg-gray-700/50 hover:bg-neon-pink text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                                                    >
+                                                        Activar
+                                                    </button>
+                                                )}
+                                                <button onClick={() => handleDelete('music', item.id, item.url)} className="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white p-2 rounded-lg transition-colors">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>

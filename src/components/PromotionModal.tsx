@@ -19,22 +19,26 @@ export const PromotionModal: React.FC<PromotionModalProps> = ({ promotion, delay
         console.log("PromotionModal Effect:", { promotion: !!promotion, trigger, isOpen });
         if (!promotion || !trigger) return;
 
-        // Check if dismissed in this session
-        const isDismissed = sessionStorage.getItem('promo_dismissed');
-        console.log("PromotionModal isDismissed:", isDismissed);
-        if (isDismissed) return;
+        let isMounted = true;
+        const img = new window.Image();
+        img.src = promotion.url;
 
-        const timer = setTimeout(() => {
-            console.log("PromotionModal Opening...");
-            setIsOpen(true);
-        }, 300); // Reduced delay for better UX after click
+        img.onload = () => {
+            if (isMounted) {
+                setTimeout(() => {
+                    console.log("PromotionModal Opening...");
+                    setIsOpen(true);
+                }, 300); // Reduced delay for better UX after click
+            }
+        };
 
-        return () => clearTimeout(timer);
+        return () => {
+            isMounted = false;
+        };
     }, [promotion, delay, trigger]);
 
     const handleClose = () => {
         setIsOpen(false);
-        sessionStorage.setItem('promo_dismissed', 'true');
     };
 
     if (!promotion || !promotion.url) return null;

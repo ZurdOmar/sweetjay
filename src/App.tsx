@@ -697,7 +697,7 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
       {activePromotion?.url && (
         <>
           <PromotionModal promotion={activePromotion} trigger={!showIntro} />
-          <PromotionBanner promotion={activePromotion} />
+          {showIntro && <PromotionBanner promotion={activePromotion} />}
         </>
       )}
 

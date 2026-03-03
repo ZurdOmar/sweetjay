@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 export interface MusicPlayerHandle {
     forcePlay: () => void;
@@ -8,7 +10,23 @@ export interface MusicPlayerHandle {
 export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(false); // Start unmuted because we have a user gesture now
+    const [activeMusic, setActiveMusic] = useState<any>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    useEffect(() => {
+        const fetchMusic = async () => {
+            try {
+                const docRef = doc(db, 'settings', 'activeMusic');
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setActiveMusic(docSnap.data());
+                }
+            } catch (error) {
+                console.error("Error fetching active music:", error);
+            }
+        };
+        fetchMusic();
+    }, []);
 
     useImperativeHandle(ref, () => ({
         forcePlay: () => {
@@ -58,7 +76,7 @@ export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-black/80 backdrop-blur-md border border-neon-pink/30 p-2 rounded-full shadow-[0_0_15px_rgba(255,0,127,0.2)]">
             <audio
                 ref={audioRef}
-                src="/music/ElDon.mp3?v=2.2"
+                src={activeMusic?.url || "/music/ElDon.mp3?v=2.2"}
                 loop
                 preload="auto"
                 playsInline
@@ -80,8 +98,8 @@ export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
             </button>
 
             <div className="hidden md:flex items-center gap-2 px-2">
-                <div className="flex flex-col">
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">El Don</span>
+                <div className="flex flex-col max-w-[120px]">
+                    <span className="text-xs font-bold text-white uppercase tracking-wider truncate" title={activeMusic?.name || "El Don"}>{activeMusic?.name || "El Don"}</span>
                     <span className="text-[10px] text-gray-400">SweetJ</span>
                 </div>
                 <button onClick={toggleMute} className="ml-2 text-white hover:text-neon-pink transition-colors">
