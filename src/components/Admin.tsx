@@ -267,13 +267,24 @@ export const Admin = () => {
                         : 1;
                 }
 
-                await addDoc(collection(db, folder), {
+                const newDocRef = await addDoc(collection(db, folder), {
                     url,
                     name: file.name,
                     createdAt: new Date().toISOString(),
                     order,
                     type: folder === 'images' ? 'gallery' : (folder === 'carousel' ? 'carousel' : 'other')
                 });
+
+                if (folder === 'promotions') {
+                    await setDoc(doc(db, 'settings', 'activePromotion'), {
+                        id: newDocRef.id,
+                        url: url,
+                        active: true,
+                        updatedAt: new Date().toISOString()
+                    });
+                    setActivePromoId(newDocRef.id);
+                }
+
                 setMessage(`¡Archivo ${file.name} subido con éxito!`);
                 setUploading(false);
                 setProgress(0);
@@ -766,6 +777,53 @@ export const Admin = () => {
                     </div>
 
                     <div className="space-y-12">
+                        {/* Promo Pop-up List */}
+                        <section>
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-xl font-bold flex items-center gap-2"><Megaphone size={20} className="text-neon-pink" /> Promociones Pop-up ({promotionsList.length})</h3>
+                                {activePromoId && (
+                                    <button
+                                        onClick={async () => {
+                                            setUploading(true);
+                                            await deleteDoc(doc(db, 'settings', 'activePromotion'));
+                                            setActivePromoId(null);
+                                            setMessage('Promoción desactivada.');
+                                            setUploading(false);
+                                        }}
+                                        className="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-all"
+                                    >
+                                        DESACTIVAR PROMO ACTUAL
+                                    </button>
+                                )}
+                            </div>
+                            {promotionsList.length > 0 ? (
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {promotionsList.map((item) => (
+                                        <div key={item.id} className={`relative group bg-dark-card border rounded-lg overflow-hidden ${activePromoId === item.id ? 'border-neon-pink ring-2 ring-neon-pink/50' : 'border-white/10'}`}>
+                                            <img src={item.url} alt={item.name} className="w-full h-40 object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                            {activePromoId === item.id && (
+                                                <div className="absolute top-2 left-2 bg-neon-pink text-black text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
+                                                    ACTIVO
+                                                </div>
+                                            )}
+                                            <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                                <button onClick={() => handleDelete('promotions', item.id, item.url)} className="bg-red-600/80 hover:bg-red-600 text-white p-2 rounded-full" title="Borrar">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                                {activePromoId !== item.id && (
+                                                    <button onClick={() => handleSetActivePromotion(item)} className="bg-neon-pink/80 hover:bg-neon-pink text-black p-2 rounded-full" title="Activar Pop-up">
+                                                        <RefreshCw size={16} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-400 italic">No hay promociones cargadas.</p>
+                            )}
+                        </section>
+
                         {/* Messages List - ALWAYS SHOW HEADER */}
                         <section className="bg-neon-pink/5 p-6 rounded-2xl border border-neon-pink/20">
                             <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-neon-pink font-black uppercase tracking-widest">
@@ -815,53 +873,6 @@ export const Admin = () => {
                                 </div>
                             ) : (
                                 <p className="text-gray-400 italic">No hay banners publicados.</p>
-                            )}
-                        </section>
-
-                        {/* Promo Pop-up List */}
-                        <section>
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-xl font-bold flex items-center gap-2"><Megaphone size={20} className="text-neon-pink" /> Promociones Pop-up ({promotionsList.length})</h3>
-                                {activePromoId && (
-                                    <button
-                                        onClick={async () => {
-                                            setUploading(true);
-                                            await deleteDoc(doc(db, 'settings', 'activePromotion'));
-                                            setActivePromoId(null);
-                                            setMessage('Promoción desactivada.');
-                                            setUploading(false);
-                                        }}
-                                        className="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-all"
-                                    >
-                                        DESACTIVAR PROMO ACTUAL
-                                    </button>
-                                )}
-                            </div>
-                            {promotionsList.length > 0 ? (
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {promotionsList.map((item) => (
-                                        <div key={item.id} className={`relative group bg-dark-card border rounded-lg overflow-hidden ${activePromoId === item.id ? 'border-neon-pink ring-2 ring-neon-pink/50' : 'border-white/10'}`}>
-                                            <img src={item.url} alt={item.name} className="w-full h-40 object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                                            {activePromoId === item.id && (
-                                                <div className="absolute top-2 left-2 bg-neon-pink text-black text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
-                                                    ACTIVO
-                                                </div>
-                                            )}
-                                            <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                                <button onClick={() => handleDelete('promotions', item.id, item.url)} className="bg-red-600/80 hover:bg-red-600 text-white p-2 rounded-full" title="Borrar">
-                                                    <Trash2 size={16} />
-                                                </button>
-                                                {activePromoId !== item.id && (
-                                                    <button onClick={() => handleSetActivePromotion(item)} className="bg-neon-pink/80 hover:bg-neon-pink text-black p-2 rounded-full" title="Activar Pop-up">
-                                                        <RefreshCw size={16} />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-gray-400 italic">No hay promociones cargadas.</p>
                             )}
                         </section>
 
