@@ -602,7 +602,7 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
                   </div>
                   <div>
                     <h4 className="font-bold text-sm uppercase text-gray-400">Email</h4>
-                    <p className="text-lg">booking@sweetjay.com</p>
+                    <p className="text-lg">jeranmp@gmail.com</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -736,6 +736,24 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
 function App() {
   const [showIntro, setShowIntro] = useState(true);
   const musicPlayerRef = useRef<MusicPlayerHandle>(null);
+
+  useEffect(() => {
+    const handlePlay = (e: Event) => {
+      const audios = document.getElementsByTagName('audio');
+      for (let i = 0; i < audios.length; i++) {
+        if (audios[i] !== e.target) {
+          audios[i].pause();
+        }
+      }
+    };
+
+    // Use capture phase to ensure we catch all audio play events
+    document.addEventListener('play', handlePlay, true);
+
+    return () => {
+      document.removeEventListener('play', handlePlay, true);
+    };
+  }, []);
 
   const handleEnter = () => {
     setShowIntro(false);
