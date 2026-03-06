@@ -277,7 +277,7 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
                   </div>
                   <h3 className="text-xl font-bold mb-1 truncate">{disc.name?.replace('.mp3', '') || 'Pista'}</h3>
                   <p className="text-neon-pink text-xs font-bold uppercase mb-1">Reciente</p>
-                  <audio controls className="w-full mt-4 h-8" src={disc.url}></audio>
+                  <audio controls controlsList="nodownload" className="w-full mt-4 h-8" src={disc.url}></audio>
                 </motion.div>
               ))
             ) : (
@@ -681,7 +681,7 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
         <div className="flex flex-col items-center gap-4">
           <p className="text-gray-500 text-sm uppercase tracking-widest mb-2 font-bold opacity-80">Desarrollado por</p>
           <img
-            src="/images/Logo-zotek_animado.svg"
+            src="/images/logo_zotek_principal.svg"
             alt="Zotek Logo"
             className="h-12 w-auto animate-pulse brightness-110"
           />

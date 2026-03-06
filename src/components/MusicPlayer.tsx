@@ -77,6 +77,7 @@ export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
             <audio
                 ref={audioRef}
                 src={activeMusic?.url || "/music/ElDon.mp3?v=2.2"}
+                controlsList="nodownload"
                 loop
                 preload="auto"
                 playsInline
