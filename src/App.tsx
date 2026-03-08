@@ -683,6 +683,7 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
           <img
             src="/images/logo_zotek_principal.svg"
             alt="Zotek Logo"
+            title="contacto:zoteksulocionesia@gmail.com"
             className="h-12 w-auto animate-pulse brightness-110"
           />
         </div>
