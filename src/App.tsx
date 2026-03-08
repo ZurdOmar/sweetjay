@@ -683,16 +683,18 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
           <img
             src="/images/logo_zotek_principal.svg"
             alt="Zotek Logo"
-            title="contacto:zoteksulocionesia@gmail.com"
             className="h-12 w-auto animate-pulse brightness-110"
           />
+          <p className="text-gray-500 text-sm mt-2">contacto: zoteksolucionesia@gmail.com</p>
         </div>
-        <p className="text-gray-500">© 2026 Sweetjay Music v2.3. Todos los derechos reservados.</p>
+
         <div className="mt-4 flex justify-center gap-6 opacity-50">
           <Instagram size={20} className="hover:text-neon-pink transition-colors cursor-pointer" />
           <Youtube size={20} className="hover:text-neon-pink transition-colors cursor-pointer" />
           <Mail size={20} className="hover:text-neon-pink transition-colors cursor-pointer" />
         </div>
+
+        <p className="text-gray-500 mt-4">© 2026 Sweetjay Music v2.3. Todos los derechos reservados.</p>
       </footer>
 
       {activePromotion?.url && (
