@@ -26,8 +26,10 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
 
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
   const [firebaseVideos, setFirebaseVideos] = useState<any[]>([]);
+  const [firebaseConcerts, setFirebaseConcerts] = useState<any[]>([]);
   const [firebaseEvents, setFirebaseEvents] = useState<any[]>([]);
   const [firebaseEventsInfo, setFirebaseEventsInfo] = useState<any>({ title: 'Tour 2025', description: 'Prepárate para vivir la experiencia de Sweetjay en vivo. Nuevas fechas, nuevos shows y toda la energía del género urbano.', footer: 'Próximamente más fechas...' });
+  const [firebaseConcertsInfo, setFirebaseConcertsInfo] = useState<any>({ title: 'Vivo', description: 'Revive la intensidad y la energía pura de Sweetjay en sus presentaciones más recientes.' });
   const [firebaseBioInfo, setFirebaseBioInfo] = useState<any>({
     title: 'Originario de Colima, 27 años',
     content: 'Sweetjay es un apasionado de la música y la expresión artística desde temprana edad...',
@@ -50,6 +52,11 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
         const videosSnapshot = await getDocs(videosQ);
         setFirebaseVideos(videosSnapshot.docs.map(doc => doc.data()));
 
+        // Fetch Concerts
+        const concertsQ = query(collection(db, 'concerts'), orderBy('createdAt', 'desc'), limit(4));
+        const concertsSnapshot = await getDocs(concertsQ);
+        setFirebaseConcerts(concertsSnapshot.docs.map(doc => doc.data()));
+
         // Fetch Events
         const eventsQ = query(collection(db, 'events'), orderBy('createdAt', 'desc'), limit(1));
         const eventsSnapshot = await getDocs(eventsQ);
@@ -70,6 +77,11 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
         const info = eventsInfoSnapshot.docs.find(d => d.id === 'eventsInfo');
         if (info) {
           setFirebaseEventsInfo(info.data());
+        }
+
+        const cInfo = eventsInfoSnapshot.docs.find(d => d.id === 'concertsInfo');
+        if (cInfo) {
+          setFirebaseConcertsInfo(cInfo.data());
         }
 
         const bInfo = eventsInfoSnapshot.docs.find(d => d.id === 'bioInfo');
@@ -139,7 +151,7 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
             {/* Desktop Menu */}
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-8">
-                {['Inicio', 'Música', 'Eventos', 'Videos', 'Galería', 'Bio', 'Contacto'].map((item) => (
+                {['Inicio', 'Música', 'Eventos', 'Conciertos', 'Videos', 'Galería', 'Bio', 'Contacto'].map((item) => (
                   <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} className="hover:text-neon-pink transition-colors px-3 py-2 rounded-md text-sm font-medium uppercase tracking-wider">
                     {item}
                   </a>
@@ -166,7 +178,7 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
               className="md:hidden bg-black border-b border-white/10"
             >
               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                {['Inicio', 'Música', 'Eventos', 'Videos', 'Galería', 'Bio', 'Contacto'].map((item) => (
+                {['Inicio', 'Música', 'Eventos', 'Conciertos', 'Videos', 'Galería', 'Bio', 'Contacto'].map((item) => (
                   <a
                     key={item}
                     href={`#${item.toLowerCase().replace(' ', '-')}`}
@@ -361,6 +373,52 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Conciertos Section */}
+      <section id="conciertos" className="py-24 relative overflow-hidden bg-dark-bg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase">CONCIERTOS</h2>
+            <div className="w-24 h-1 bg-neon-pink mx-auto"></div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {firebaseConcerts.length > 0 ? (
+              firebaseConcerts.map((video, idx) => (
+                <div key={idx} className="aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black flex flex-col items-center justify-center">
+                  <video
+                    controls
+                    controlsList="nodownload"
+                    className="w-full h-full object-contain"
+                    src={video.url}
+                    poster="/images/logo.png"
+                  >
+                    Tu navegador no soporta la reproducción de video.
+                  </video>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-1 lg:col-span-2 text-center py-12 border border-dashed border-white/20 rounded-2xl bg-black">
+                <p className="text-gray-400 text-lg uppercase tracking-widest font-bold">Próximamente videos en vivo...</p>
+              </div>
+            )}
+
+            {firebaseConcerts.length > 0 && firebaseConcerts.length % 2 !== 0 && (
+              <div className="flex flex-col justify-center">
+                <h3 className="text-2xl font-bold mb-4 text-neon-pink uppercase">{firebaseConcertsInfo.title}</h3>
+                <p className="text-gray-300 text-lg mb-6">
+                  {firebaseConcertsInfo.description}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>

@@ -20,12 +20,14 @@ export const Admin = () => {
     const [musicList, setMusicList] = useState<any[]>([]);
     const [eventsList, setEventsList] = useState<any[]>([]);
     const [videosList, setVideosList] = useState<any[]>([]);
+    const [concertsList, setConcertsList] = useState<any[]>([]);
     const [adsList, setAdsList] = useState<any[]>([]);
     const [promotionsList, setPromotionsList] = useState<any[]>([]);
     const [messagesList, setMessagesList] = useState<any[]>([]);
     const [activePromoId, setActivePromoId] = useState<string | null>(null);
     const [activeMusicId, setActiveMusicId] = useState<string | null>(null);
     const [eventsInfo, setEventsInfo] = useState<any>({ title: 'Tour 2025', description: 'Prepárate para vivir la experiencia de Sweetjay en vivo. Nuevas fechas, nuevos shows y toda la energía del género urbano.', footer: 'Próximamente más fechas...' });
+    const [concertsInfo, setConcertsInfo] = useState<any>({ title: 'Vivo', description: 'Revive la intensidad y la energía pura de Sweetjay en sus presentaciones más recientes.' });
     const [bioInfo, setBioInfo] = useState<any>({
         title: 'Originario de Colima, 27 años',
         content: `Sweetjay es un apasionado de la música y la expresión artística desde temprana edad.Inspirado por la necesidad de expresar sus sentimientos a través de melodías.Debuta con un EP **“MY ESSENCE”** producido por Yacknees en octubre del 2023.\n\nMiembro activo de ** Flow312 **, plataforma dedicada a promover el talento urbano colimense.Ha participado en ediciones exitosas de festivales urbanos y eventos locales de trap.`,
@@ -114,6 +116,7 @@ export const Admin = () => {
             fetchCollection('music', setMusicList),
             fetchCollection('events', setEventsList),
             fetchCollection('videos', setVideosList),
+            fetchCollection('concerts', setConcertsList),
             fetchCollection('ads', setAdsList),
             fetchCollection('promotions', setPromotionsList),
             fetchCollection('messages', setMessagesList),
@@ -135,6 +138,9 @@ export const Admin = () => {
             const settingsDocs = await getDocs(query(collection(db, 'settings')));
             const evInfo = settingsDocs.docs.find(d => d.id === 'eventsInfo');
             if (evInfo) setEventsInfo(evInfo.data());
+
+            const concInfo = settingsDocs.docs.find(d => d.id === 'concertsInfo');
+            if (concInfo) setConcertsInfo(concInfo.data());
 
             const bInfo = settingsDocs.docs.find(d => d.id === 'bioInfo');
             if (bInfo) setBioInfo(bInfo.data());
@@ -224,6 +230,20 @@ export const Admin = () => {
         }
         setUploading(false);
     };
+
+    const handleUpdateConcertsInfo = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setUploading(true);
+        try {
+            await setDoc(doc(db, 'settings', 'concertsInfo'), concertsInfo);
+            setMessage('¡Información de conciertos actualizada con éxito!');
+            refreshData();
+        } catch (error: any) {
+            setMessage('Error al actualizar: ' + error.message);
+        }
+        setUploading(false);
+    };
+
     const handleAddYoutubeLink = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!youtubeLink) return;
@@ -696,8 +716,8 @@ export const Admin = () => {
                     {/* Videos Management (YouTube Links) */}
                     <div className="bg-dark-card p-6 rounded-2xl border border-white/10 flex flex-col items-center text-center">
                         <Youtube size={48} className="text-neon-pink mb-4" />
-                        <h3 className="font-bold mb-2">Videos (YouTube)</h3>
-                        <p className="text-sm text-gray-400 mb-6">Pega el enlace de tus videos.</p>
+                        <h3 className="font-bold mb-2">Videos Oficiales (YouTube)</h3>
+                        <p className="text-sm text-gray-400 mb-6">Pega el enlace de tus videos de YT.</p>
                         <form onSubmit={handleAddYoutubeLink} className="w-full flex flex-col gap-2">
                             <input
                                 type="url"
@@ -715,6 +735,48 @@ export const Admin = () => {
                                 <Upload size={16} className="inline mr-2" /> Guardar Enlace
                             </button>
                         </form>
+                    </div>
+
+                    {/* Concerts Upload (Local Videos) */}
+                    <div className="bg-dark-card p-6 rounded-2xl border border-white/10 flex flex-col items-center text-center">
+                        <Youtube size={48} className="text-neon-pink mb-4" />
+                        <h3 className="font-bold mb-2">Conciertos (Videos Locales)</h3>
+                        <p className="text-sm text-gray-400 mb-6">Sube videos grabados de tus shows (.mp4, .mov).</p>
+                        <label className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg cursor-pointer transition-colors border border-white/10 w-full mb-8">
+                            <Upload size={16} className="inline mr-2" /> Subir Video
+                            <input type="file" className="hidden" accept="video/*" onChange={(e) => handleUpload(e, 'concerts')} />
+                        </label>
+
+                        {/* Editable Text Section */}
+                        <div className="w-full text-left space-y-4 pt-6 border-t border-white/10">
+                            <p className="text-xs font-bold text-gray-500 uppercase">Editar Textos de Conciertos</p>
+                            <div>
+                                <label className="block text-[10px] text-gray-400 uppercase mb-1">Título</label>
+                                <input
+                                    type="text"
+                                    value={concertsInfo.title}
+                                    onChange={(e) => setConcertsInfo({ ...concertsInfo, title: e.target.value })}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-neon-pink outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] text-gray-400 uppercase mb-1">Descripción</label>
+                                <textarea
+                                    value={concertsInfo.description}
+                                    onChange={(e) => setConcertsInfo({ ...concertsInfo, description: e.target.value })}
+                                    rows={3}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-neon-pink outline-none resize-none"
+                                />
+                            </div>
+                            <button
+                                onClick={handleUpdateConcertsInfo}
+                                disabled={uploading}
+                                className="w-full bg-neon-pink/20 hover:bg-neon-pink/40 text-neon-pink font-bold py-2 rounded-lg border border-neon-pink/30 transition-all text-sm disabled:opacity-50"
+                            >
+                                <RefreshCw size={14} className={`inline mr-2 ${uploading ? 'animate-spin' : ''}`} />
+                                Guardar Cambios de Texto
+                            </button>
+                        </div>
                     </div>
 
                     {/* Announcements / Ads */}
@@ -1009,7 +1071,7 @@ export const Admin = () => {
                         {/* YouTube Videos List */}
                         {videosList.length > 0 && (
                             <section>
-                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Youtube size={20} className="text-neon-pink" /> Enlaces de Videos YouTube ({videosList.length})</h3>
+                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Youtube size={20} className="text-neon-pink" /> Enlaces de Videos Oficiales ({videosList.length})</h3>
                                 <div className="space-y-3">
                                     {videosList.map((item) => (
                                         <div key={item.id} className="flex justify-between items-center bg-dark-card border border-white/10 rounded-lg p-3">
@@ -1019,6 +1081,28 @@ export const Admin = () => {
                                             <button onClick={() => handleDelete('videos', item.id)} className="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white p-2 rounded-lg transition-colors flex-shrink-0">
                                                 <Trash2 size={16} />
                                             </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Concerts Videos List */}
+                        {concertsList.length > 0 && (
+                            <section>
+                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Youtube size={20} className="text-neon-pink" /> Videos de Conciertos ({concertsList.length})</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {concertsList.map((item) => (
+                                        <div key={item.id} className="relative group bg-dark-card border border-white/10 rounded-lg overflow-hidden">
+                                            <video src={item.url} className="w-full h-32 object-cover opacity-70 group-hover:opacity-100 transition-opacity" muted />
+                                            <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button onClick={() => handleDelete('concerts', item.id, item.url)} className="bg-red-600/80 hover:bg-red-600 text-white p-2 rounded-full" title="Borrar">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                            <div className="absolute bottom-0 inset-x-0 bg-black/60 p-2 text-xs truncate">
+                                                {item.name || 'Video de Concierto'}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
