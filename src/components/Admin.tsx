@@ -556,30 +556,72 @@ export const Admin = () => {
                             <p className="text-[10px] text-neon-pink uppercase font-bold mb-2 tracking-widest opacity-70">
                                 {eventsList.length > 0 ? 'Flyer Activo (Firebase)' : 'Flyer por Defecto'}
                             </p>
-                            <div className="aspect-[3/4] rounded-lg overflow-hidden border border-neon-pink/30 shadow-[0_0_15px_rgba(255,0,127,0.1)]">
-                                <img
-                                    src={eventsList.length > 0 ? eventsList[0].url : '/images/jeune.jpeg'}
-                                    alt="Evento Actual"
-                                    className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all"
-                                />
-                                {/* Delete Button for Firebase Flyer */}
-                                {eventsList.length > 0 && (
-                                    <button
-                                        onClick={() => handleDelete('events', eventsList[0].id, eventsList[0].url)}
-                                        className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-2 rounded-full shadow-lg z-10 transition-transform hover:scale-110"
-                                        title="Eliminar este flyer"
-                                    >
-                                        <Trash2 size={20} />
-                                    </button>
+                            <div className={`aspect-[3/4] rounded-lg overflow-hidden border border-neon-pink/30 shadow-[0_0_15px_rgba(255,0,127,0.1)] bg-black/50 ${eventsInfo.isVisible === false ? 'opacity-50' : ''}`}>
+                                {eventsList.length > 0 ? (
+                                    <img
+                                        src={eventsList[0].url}
+                                        alt="Evento Actual"
+                                        className={`w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all`}
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        <p className="text-gray-500 font-bold text-xs uppercase px-4 text-center">Sin flyer activo</p>
+                                    </div>
                                 )}
                             </div>
                         </div>
 
 
-                        <label className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg cursor-pointer transition-colors border border-white/10 w-full mb-8">
-                            <Upload size={16} className="inline mr-2" /> {eventsList.length > 0 ? 'Cambiar Flyer' : 'Subir Flyer'}
-                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'events')} />
-                        </label>
+                        {/* Action Buttons */}
+                        <div className="w-full flex flex-col gap-3 mb-8">
+                            <label className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg cursor-pointer transition-colors border border-white/10 w-full flex items-center justify-center">
+                                <Upload size={16} className="mr-2" /> {eventsList.length > 0 ? 'Cambiar Flyer' : 'Subir Flyer'}
+                                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'events')} />
+                            </label>
+
+                            {/* Bajar Flyer Button */}
+                            <button
+                                onClick={() => {
+                                    if (eventsList.length > 0) {
+                                        handleDelete('events', eventsList[0].id, eventsList[0].url);
+                                    }
+                                }}
+                                disabled={eventsList.length === 0}
+                                className={`font-bold px-4 py-2 rounded-lg transition-colors border flex items-center justify-center w-full ${eventsList.length > 0 ? 'bg-red-600/20 hover:bg-red-600/40 text-red-500 border-red-500/30' : 'bg-white/5 text-gray-600 border-white/5 cursor-not-allowed'}`}
+                                title={eventsList.length > 0 ? "Eliminar este flyer" : "Sube un flyer para poder bajarlo"}
+                            >
+                                <Trash2 size={16} className="mr-2" /> Bajar Flyer
+                            </button>
+
+                            {/* Enable/Disable Section */}
+                            <button
+                                onClick={() => {
+                                    setEventsInfo({ ...eventsInfo, isVisible: eventsInfo.isVisible === false ? true : false });
+                                    // Save it immediately
+                                    setUploading(true);
+                                    setDoc(doc(db, 'settings', 'eventsInfo'), { ...eventsInfo, isVisible: eventsInfo.isVisible === false ? true : false })
+                                        .then(() => {
+                                            setMessage(eventsInfo.isVisible === false ? 'Sección de eventos activada.' : 'Sección de eventos oculta.');
+                                            setUploading(false);
+                                        })
+                                        .catch(err => {
+                                            setMessage('Error al actualizar: ' + err.message);
+                                            setUploading(false);
+                                        });
+                                }}
+                                className={`px-4 py-2 rounded-lg transition-colors border flex items-center justify-center w-full font-bold ${eventsInfo.isVisible === false ? 'bg-green-600/20 text-green-500 border-green-500/30 hover:bg-green-600/40' : 'bg-orange-600/20 text-orange-500 border-orange-500/30 hover:bg-orange-600/40'}`}
+                            >
+                                {eventsInfo.isVisible === false ? (
+                                    <>
+                                        <CheckCircle2 size={16} className="mr-2" /> Mostrar Sección
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 size={16} className="mr-2" /> Ocultar Sección
+                                    </>
+                                )}
+                            </button>
+                        </div>
 
                         {/* Editable Text Section */}
                         <div className="w-full text-left space-y-4 pt-6 border-t border-white/10">
@@ -741,11 +783,56 @@ export const Admin = () => {
                     <div className="bg-dark-card p-6 rounded-2xl border border-white/10 flex flex-col items-center text-center">
                         <Youtube size={48} className="text-neon-pink mb-4" />
                         <h3 className="font-bold mb-2">Conciertos (Videos Locales)</h3>
-                        <p className="text-sm text-gray-400 mb-6">Sube videos grabados de tus shows (.mp4, .mov).</p>
-                        <label className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg cursor-pointer transition-colors border border-white/10 w-full mb-8">
-                            <Upload size={16} className="inline mr-2" /> Subir Video
-                            <input type="file" className="hidden" accept="video/*" onChange={(e) => handleUpload(e, 'concerts')} />
-                        </label>
+                        {/* Action Buttons */}
+                        <div className="w-full flex flex-col gap-3 mb-8">
+                            <label className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg cursor-pointer transition-colors border border-white/10 w-full flex items-center justify-center">
+                                <Upload size={16} className="mr-2" /> Subir Video
+                                <input type="file" className="hidden" accept="video/*" onChange={(e) => handleUpload(e, 'concerts')} />
+                            </label>
+
+                            {/* Bajar Video Button */}
+                            <button
+                                onClick={() => {
+                                    if (concertsList.length > 0) {
+                                        handleDelete('concerts', concertsList[0].id, concertsList[0].url);
+                                    }
+                                }}
+                                disabled={concertsList.length === 0}
+                                className={`font-bold px-4 py-2 rounded-lg transition-colors border flex items-center justify-center w-full ${concertsList.length > 0 ? 'bg-red-600/20 hover:bg-red-600/40 text-red-500 border-red-500/30' : 'bg-white/5 text-gray-600 border-white/5 cursor-not-allowed'}`}
+                                title={concertsList.length > 0 ? "Eliminar este video" : "Sube un video para poder bajarlo"}
+                            >
+                                <Trash2 size={16} className="mr-2" /> Bajar Video
+                            </button>
+
+                            {/* Enable/Disable Section */}
+                            <button
+                                onClick={() => {
+                                    setConcertsInfo({ ...concertsInfo, isVisible: concertsInfo.isVisible === false ? true : false });
+                                    // Save it immediately
+                                    setUploading(true);
+                                    setDoc(doc(db, 'settings', 'concertsInfo'), { ...concertsInfo, isVisible: concertsInfo.isVisible === false ? true : false })
+                                        .then(() => {
+                                            setMessage(concertsInfo.isVisible === false ? 'Sección de conciertos activada.' : 'Sección de conciertos oculta.');
+                                            setUploading(false);
+                                        })
+                                        .catch(err => {
+                                            setMessage('Error al actualizar: ' + err.message);
+                                            setUploading(false);
+                                        });
+                                }}
+                                className={`px-4 py-2 rounded-lg transition-colors border flex items-center justify-center w-full font-bold ${concertsInfo.isVisible === false ? 'bg-green-600/20 text-green-500 border-green-500/30 hover:bg-green-600/40' : 'bg-orange-600/20 text-orange-500 border-orange-500/30 hover:bg-orange-600/40'}`}
+                            >
+                                {concertsInfo.isVisible === false ? (
+                                    <>
+                                        <CheckCircle2 size={16} className="mr-2" /> Mostrar Sección
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 size={16} className="mr-2" /> Ocultar Sección
+                                    </>
+                                )}
+                            </button>
+                        </div>
 
                         {/* Editable Text Section */}
                         <div className="w-full text-left space-y-4 pt-6 border-t border-white/10">

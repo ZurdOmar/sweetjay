@@ -5,7 +5,9 @@ service firebase.storage {
     // Función para validar si el usuario es un administrador autorizado
     function isAdmin() {
       return request.auth != null && 
-             (request.auth.token.email == 'morentinomar@gmail.com' || request.auth.token.email == 'jeranmp@gmail.com');
+             (request.auth.token.email == 'morentinomar@gmail.com' || 
+              request.auth.token.email == 'jeranmp@gmail.com' ||
+              request.auth.token.email == 'test@sweetjay.com');
     }
 
     match /{allPaths=**} {

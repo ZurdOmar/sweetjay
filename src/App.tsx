@@ -151,11 +151,17 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
             {/* Desktop Menu */}
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-8">
-                {['Inicio', 'Música', 'Eventos', 'Conciertos', 'Videos', 'Galería', 'Bio', 'Contacto'].map((item) => (
-                  <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} className="hover:text-neon-pink transition-colors px-3 py-2 rounded-md text-sm font-medium uppercase tracking-wider">
-                    {item}
-                  </a>
-                ))}
+                {['Inicio', 'Música', 'Eventos', 'Conciertos', 'Videos', 'Galería', 'Bio', 'Contacto']
+                  .filter(item => {
+                    if (item === 'Eventos' && firebaseEventsInfo.isVisible === false) return false;
+                    if (item === 'Conciertos' && firebaseConcertsInfo.isVisible === false) return false;
+                    return true;
+                  })
+                  .map((item) => (
+                    <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} className="hover:text-neon-pink transition-colors px-3 py-2 rounded-md text-sm font-medium uppercase tracking-wider">
+                      {item}
+                    </a>
+                  ))}
               </div>
             </div>
 
@@ -178,16 +184,22 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
               className="md:hidden bg-black border-b border-white/10"
             >
               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                {['Inicio', 'Música', 'Eventos', 'Conciertos', 'Videos', 'Galería', 'Bio', 'Contacto'].map((item) => (
-                  <a
-                    key={item}
-                    href={`#${item.toLowerCase().replace(' ', '-')}`}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block px-3 py-4 rounded-md text-base font-bold uppercase text-center hover:bg-white/5 hover:text-neon-pink"
-                  >
-                    {item}
-                  </a>
-                ))}
+                {['Inicio', 'Música', 'Eventos', 'Conciertos', 'Videos', 'Galería', 'Bio', 'Contacto']
+                  .filter(item => {
+                    if (item === 'Eventos' && firebaseEventsInfo.isVisible === false) return false;
+                    if (item === 'Conciertos' && firebaseConcertsInfo.isVisible === false) return false;
+                    return true;
+                  })
+                  .map((item) => (
+                    <a
+                      key={item}
+                      href={`#${item.toLowerCase().replace(' ', '-')}`}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="block px-3 py-4 rounded-md text-base font-bold uppercase text-center hover:bg-white/5 hover:text-neon-pink"
+                    >
+                      {item}
+                    </a>
+                  ))}
               </div>
             </motion.div>
           )}
@@ -330,98 +342,102 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
       </section>
 
       {/* Próximos Eventos Section */}
-      <section id="eventos" className="py-24 relative bg-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase">PRÓXIMOS EVENTOS</h2>
-            <div className="w-24 h-1 bg-neon-pink mx-auto"></div>
-          </motion.div>
+      {firebaseEventsInfo.isVisible !== false && (
+        <section id="eventos" className="py-24 relative bg-black">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase">PRÓXIMOS EVENTOS</h2>
+              <div className="w-24 h-1 bg-neon-pink mx-auto"></div>
+            </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {firebaseEvents.length > 0 ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-neon-pink/10"
-              >
-                <img src={firebaseEvents[0].url} alt="Próximo Evento" className="w-full h-auto" />
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-neon-pink/10"
-              >
-                <img src="/images/jeune.jpeg" alt="Próximo Evento" className="w-full h-auto" />
-              </motion.div>
-            )}
-            <div className="space-y-8">
-              <div className="bg-white/5 p-8 rounded-2xl border-l-4 border-neon-pink shadow-lg shadow-neon-pink/10">
-                <span className="text-neon-pink font-bold uppercase tracking-widest text-sm block mb-2">Destacado</span>
-                <h3 className="text-3xl font-bold mb-4">{firebaseEventsInfo.title}</h3>
-                <p className="text-gray-300 text-lg mb-6">
-                  {firebaseEventsInfo.description}
-                </p>
-                <div className="flex items-center gap-3 text-gray-400">
-                  <MapPin size={20} className="text-neon-pink" />
-                  <span>{firebaseEventsInfo.footer}</span>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              {firebaseEvents.length > 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-neon-pink/10"
+                >
+                  <img src={firebaseEvents[0].url} alt="Próximo Evento" className="w-full h-auto" />
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  className="rounded-2xl overflow-hidden border border-dashed border-white/20 bg-black/50 aspect-[3/4] flex items-center justify-center"
+                >
+                  <p className="text-gray-500 font-bold uppercase tracking-widest text-sm text-center px-4">Próximamente más eventos...</p>
+                </motion.div>
+              )}
+              <div className="space-y-8">
+                <div className="bg-white/5 p-8 rounded-2xl border-l-4 border-neon-pink shadow-lg shadow-neon-pink/10">
+                  <span className="text-neon-pink font-bold uppercase tracking-widest text-sm block mb-2">Destacado</span>
+                  <h3 className="text-3xl font-bold mb-4">{firebaseEventsInfo.title}</h3>
+                  <p className="text-gray-300 text-lg mb-6">
+                    {firebaseEventsInfo.description}
+                  </p>
+                  <div className="flex items-center gap-3 text-gray-400">
+                    <MapPin size={20} className="text-neon-pink" />
+                    <span>{firebaseEventsInfo.footer}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Conciertos Section */}
-      <section id="conciertos" className="py-24 relative overflow-hidden bg-dark-bg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase">CONCIERTOS</h2>
-            <div className="w-24 h-1 bg-neon-pink mx-auto"></div>
-          </motion.div>
+      {firebaseConcertsInfo.isVisible !== false && (
+        <section id="conciertos" className="py-24 relative overflow-hidden bg-dark-bg">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase">CONCIERTOS</h2>
+              <div className="w-24 h-1 bg-neon-pink mx-auto"></div>
+            </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {firebaseConcerts.length > 0 ? (
-              firebaseConcerts.map((video, idx) => (
-                <div key={idx} className="aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black flex flex-col items-center justify-center">
-                  <video
-                    controls
-                    controlsList="nodownload"
-                    className="w-full h-full object-contain"
-                    src={video.url}
-                    poster="/images/logo.png"
-                  >
-                    Tu navegador no soporta la reproducción de video.
-                  </video>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              {firebaseConcerts.length > 0 ? (
+                firebaseConcerts.map((video, idx) => (
+                  <div key={idx} className="aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black flex flex-col items-center justify-center">
+                    <video
+                      controls
+                      controlsList="nodownload"
+                      className="w-full h-full object-contain"
+                      src={video.url}
+                      poster="/images/logo.png"
+                    >
+                      Tu navegador no soporta la reproducción de video.
+                    </video>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-1 lg:col-span-2 text-center py-12 border border-dashed border-white/20 rounded-2xl bg-black">
+                  <p className="text-gray-400 text-lg uppercase tracking-widest font-bold">Próximamente videos en vivo...</p>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-1 lg:col-span-2 text-center py-12 border border-dashed border-white/20 rounded-2xl bg-black">
-                <p className="text-gray-400 text-lg uppercase tracking-widest font-bold">Próximamente videos en vivo...</p>
-              </div>
-            )}
+              )}
 
-            {firebaseConcerts.length > 0 && firebaseConcerts.length % 2 !== 0 && (
-              <div className="flex flex-col justify-center">
-                <h3 className="text-2xl font-bold mb-4 text-neon-pink uppercase">{firebaseConcertsInfo.title}</h3>
-                <p className="text-gray-300 text-lg mb-6">
-                  {firebaseConcertsInfo.description}
-                </p>
-              </div>
-            )}
+              {firebaseConcerts.length > 0 && firebaseConcerts.length % 2 !== 0 && (
+                <div className="flex flex-col justify-center">
+                  <h3 className="text-2xl font-bold mb-4 text-neon-pink uppercase">{firebaseConcertsInfo.title}</h3>
+                  <p className="text-gray-300 text-lg mb-6">
+                    {firebaseConcertsInfo.description}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Videos Section */}
       <section id="videos" className="py-24 relative overflow-hidden">
