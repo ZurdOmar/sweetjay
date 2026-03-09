@@ -680,11 +680,45 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
       <footer className="py-12 border-t border-white/10 bg-black text-center flex flex-col items-center gap-6">
         <div className="flex flex-col items-center gap-4">
           <p className="text-gray-500 text-sm uppercase tracking-widest mb-2 font-bold opacity-80">Desarrollado por</p>
-          <img
-            src="/images/logo_zotek_principal.svg"
-            alt="Zotek Logo"
-            className="h-12 w-auto animate-pulse brightness-110"
-          />
+          <a href="https://zotek.ia" target="_blank" rel="noopener noreferrer" className="block animate-pulse brightness-110 hover:brightness-125 transition-all">
+            <svg width="160" height="60" viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                {`/* Animación de pulso para el círculo central */
+                @keyframes pulse {
+                  0% { transform: scale(1); }
+                  50% { transform: scale(1.1); }
+                  100% { transform: scale(1); }
+                }
+                .circle-main { animation: pulse 2s infinite ease-in-out; }
+
+                /* Animación de rotación para los puntos externos */
+                @keyframes rotateDots {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+                .dot-group { animation: rotateDots 5s linear infinite; transform-origin: center; }`}
+              </style>
+
+              {/* Icono IA / Chip tecnológico */}
+              <g transform="translate(35, 30)">
+                <circle r="14" cx="0" cy="0" fill="#00bcd4" className="circle-main" />
+                <g className="dot-group" style={{ transformBox: 'fill-box', transformOrigin: 'center' }}>
+                  <circle r="4" cx="-18" cy="-18" fill="#ff0066" fillOpacity="0.7" />
+                  <circle r="4" cx="18" cy="-18" fill="#ff0066" fillOpacity="0.7" />
+                  <circle r="4" cx="-18" cy="18" fill="#ff0066" fillOpacity="0.7" />
+                  <circle r="4" cx="18" cy="18" fill="#ff0066" fillOpacity="0.7" />
+                </g>
+                {/* Líneas de conexión */}
+                <line x1="-18" y1="-18" x2="0" y2="0" stroke="#00bcd4" strokeWidth="1.5" strokeOpacity="0.5" />
+                <line x1="18" y1="-18" x2="0" y2="0" stroke="#00bcd4" strokeWidth="1.5" strokeOpacity="0.5" />
+                <line x1="-18" y1="18" x2="0" y2="0" stroke="#00bcd4" strokeWidth="1.5" strokeOpacity="0.5" />
+                <line x1="18" y1="18" x2="0" y2="0" stroke="#00bcd4" strokeWidth="1.5" strokeOpacity="0.5" />
+              </g>
+
+              {/* Texto Zotek */}
+              <text x="65" y="38" fill="#1565C0" fontFamily="'Space Grotesk', sans-serif" fontSize="28" fontWeight="600" dominantBaseline="middle">Zotek</text>
+            </svg>
+          </a>
           <p className="text-gray-500 text-sm mt-2">contacto: zoteksolucionesia@gmail.com</p>
         </div>
 
