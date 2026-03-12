@@ -13,30 +13,43 @@ import { db } from './firebase';
 import { collection, addDoc, getDocs, query, orderBy, limit, doc, onSnapshot } from 'firebase/firestore';
 import { PromotionModal } from './components/PromotionModal';
 import { PromotionBanner } from './components/PromotionBanner';
+import type {
+  EventsInfo,
+  ConcertsInfo,
+  BioInfo,
+  GalleryImage,
+  Video,
+  Concert,
+  AppEvent,
+  MusicTrack,
+  Ad,
+  Promotion,
+  ContactStatus
+} from './types/App';
 
 function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObject<MusicPlayerHandle | null>, showIntro: boolean }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactMessage, setContactMessage] = useState('');
-  const [contactStatus, setContactStatus] = useState('');
-  const [activePromotion, setActivePromotion] = useState<any>(null);
+  const [contactStatus, setContactStatus] = useState<ContactStatus>('');
+  const [activePromotion, setActivePromotion] = useState<Promotion | null>(null);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  const [galleryImages, setGalleryImages] = useState<any[]>([]);
-  const [firebaseVideos, setFirebaseVideos] = useState<any[]>([]);
-  const [firebaseConcerts, setFirebaseConcerts] = useState<any[]>([]);
-  const [firebaseEvents, setFirebaseEvents] = useState<any[]>([]);
-  const [firebaseEventsInfo, setFirebaseEventsInfo] = useState<any>({ title: 'Tour 2025', description: 'Prepárate para vivir la experiencia de Sweetjay en vivo. Nuevas fechas, nuevos shows y toda la energía del género urbano.', footer: 'Próximamente más fechas...' });
-  const [firebaseConcertsInfo, setFirebaseConcertsInfo] = useState<any>({ title: 'Vivo', description: 'Revive la intensidad y la energía pura de Sweetjay en sus presentaciones más recientes.' });
-  const [firebaseBioInfo, setFirebaseBioInfo] = useState<any>({
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [firebaseVideos, setFirebaseVideos] = useState<Video[]>([]);
+  const [firebaseConcerts, setFirebaseConcerts] = useState<Concert[]>([]);
+  const [firebaseEvents, setFirebaseEvents] = useState<AppEvent[]>([]);
+  const [firebaseEventsInfo, setFirebaseEventsInfo] = useState<EventsInfo>({ title: 'Tour 2025', description: 'Prepárate para vivir la experiencia de Sweetjay en vivo. Nuevas fechas, nuevos shows y toda la energía del género urbano.', footer: 'Próximamente más fechas...' });
+  const [firebaseConcertsInfo, setFirebaseConcertsInfo] = useState<ConcertsInfo>({ title: 'Vivo', description: 'Revive la intensidad y la energía pura de Sweetjay en sus presentaciones más recientes.' });
+  const [firebaseBioInfo, setFirebaseBioInfo] = useState<BioInfo>({
     title: 'Originario de Colima, 27 años',
     content: 'Sweetjay es un apasionado de la música y la expresión artística desde temprana edad...',
     highlights: []
   });
-  const [firebaseMusic, setFirebaseMusic] = useState<any[]>([]);
-  const [firebaseAds, setFirebaseAds] = useState<any[]>([]);
+  const [firebaseMusic, setFirebaseMusic] = useState<MusicTrack[]>([]);
+  const [firebaseAds, setFirebaseAds] = useState<Ad[]>([]);
   const [showAd, setShowAd] = useState(true);
 
   useEffect(() => {
@@ -45,48 +58,48 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
         // Fetch Photos
         const photosQ = query(collection(db, 'images'), orderBy('createdAt', 'desc'), limit(8));
         const photosSnapshot = await getDocs(photosQ);
-        setGalleryImages(photosSnapshot.docs.map(doc => doc.data()));
+        setGalleryImages(photosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as unknown as GalleryImage[]);
 
         // Fetch Videos
         const videosQ = query(collection(db, 'videos'), orderBy('createdAt', 'desc'), limit(2));
         const videosSnapshot = await getDocs(videosQ);
-        setFirebaseVideos(videosSnapshot.docs.map(doc => doc.data()));
+        setFirebaseVideos(videosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as unknown as Video[]);
 
         // Fetch Concerts
         const concertsQ = query(collection(db, 'concerts'), orderBy('createdAt', 'desc'), limit(4));
         const concertsSnapshot = await getDocs(concertsQ);
-        setFirebaseConcerts(concertsSnapshot.docs.map(doc => doc.data()));
+        setFirebaseConcerts(concertsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as unknown as Concert[]);
 
         // Fetch Events
         const eventsQ = query(collection(db, 'events'), orderBy('createdAt', 'desc'), limit(1));
         const eventsSnapshot = await getDocs(eventsQ);
-        setFirebaseEvents(eventsSnapshot.docs.map(doc => doc.data()));
+        setFirebaseEvents(eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as unknown as AppEvent[]);
 
         // Fetch Music
         const musicQ = query(collection(db, 'music'), orderBy('createdAt', 'desc'), limit(4));
         const musicSnapshot = await getDocs(musicQ);
-        setFirebaseMusic(musicSnapshot.docs.map(doc => doc.data()));
+        setFirebaseMusic(musicSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as unknown as MusicTrack[]);
 
         // Fetch Ads
         const adsQ = query(collection(db, 'ads'), orderBy('createdAt', 'desc'), limit(1));
         const adsSnapshot = await getDocs(adsQ);
-        setFirebaseAds(adsSnapshot.docs.map(doc => doc.data()));
+        setFirebaseAds(adsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as unknown as Ad[]);
 
         // Fetch Events Info
         const eventsInfoSnapshot = await getDocs(query(collection(db, 'settings')));
         const info = eventsInfoSnapshot.docs.find(d => d.id === 'eventsInfo');
         if (info) {
-          setFirebaseEventsInfo(info.data());
+          setFirebaseEventsInfo(info.data() as unknown as EventsInfo);
         }
 
         const cInfo = eventsInfoSnapshot.docs.find(d => d.id === 'concertsInfo');
         if (cInfo) {
-          setFirebaseConcertsInfo(cInfo.data());
+          setFirebaseConcertsInfo(cInfo.data() as unknown as ConcertsInfo);
         }
 
         const bInfo = eventsInfoSnapshot.docs.find(d => d.id === 'bioInfo');
         if (bInfo) {
-          setFirebaseBioInfo(bInfo.data());
+          setFirebaseBioInfo(bInfo.data() as unknown as BioInfo);
         }
       } catch (error) {
         console.error("Error fetching dynamic data:", error);
@@ -100,7 +113,7 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'settings', 'activePromotion'), (snapshot) => {
       if (snapshot.exists()) {
-        setActivePromotion(snapshot.data());
+        setActivePromotion({ id: snapshot.id, ...snapshot.data() } as Promotion);
       } else {
         setActivePromotion(null);
       }
@@ -622,7 +635,7 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 {firebaseBioInfo.highlights && firebaseBioInfo.highlights.length > 0 ? (
-                  firebaseBioInfo.highlights.map((item: any, idx: number) => (
+                  firebaseBioInfo.highlights.map((item, idx) => (
                     <div key={idx} className="bg-white/5 p-4 rounded-xl border border-white/5">
                       <h4 className="text-neon-pink font-bold text-sm mb-2 uppercase flex items-center gap-2">
                         {item.iconType === 'disc' ? <DiscIcon size={16} /> : item.iconType === 'megaphone' ? <Megaphone size={16} /> : <Star size={16} />}
@@ -868,7 +881,7 @@ function App() {
   const musicPlayerRef = useRef<MusicPlayerHandle>(null);
 
   useEffect(() => {
-    const handlePlay = (e: Event) => {
+    const handlePlay = (e: globalThis.Event) => {
       const audios = document.getElementsByTagName('audio');
       for (let i = 0; i < audios.length; i++) {
         if (audios[i] !== e.target) {

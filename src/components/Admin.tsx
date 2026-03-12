@@ -4,9 +4,23 @@ import { sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAu
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, getDocs, query, deleteDoc, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { LogIn, LogOut, Upload, Image as ImageIcon, Music as MusicIcon, Calendar, CheckCircle2, Youtube, Megaphone, Trash2, RefreshCw, MessageSquare } from 'lucide-react';
+import type {
+  User,
+  ImageItem,
+  MusicItem,
+  EventItem,
+  VideoItem,
+  ConcertItem,
+  AdItem,
+  PromotionItem,
+  MessageItem,
+  BioInfo,
+  EventsInfo,
+  ConcertsInfo
+} from '../types/Admin';
 
 export const Admin = () => {
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -15,22 +29,22 @@ export const Admin = () => {
     const [youtubeLink, setYoutubeLink] = useState('');
 
     // States for existing content
-    const [imagesList, setImagesList] = useState<any[]>([]);
-    const [carouselList, setCarouselList] = useState<any[]>([]);
-    const [musicList, setMusicList] = useState<any[]>([]);
-    const [eventsList, setEventsList] = useState<any[]>([]);
-    const [videosList, setVideosList] = useState<any[]>([]);
-    const [concertsList, setConcertsList] = useState<any[]>([]);
-    const [adsList, setAdsList] = useState<any[]>([]);
-    const [promotionsList, setPromotionsList] = useState<any[]>([]);
-    const [messagesList, setMessagesList] = useState<any[]>([]);
+    const [imagesList, setImagesList] = useState<ImageItem[]>([]);
+    const [carouselList, setCarouselList] = useState<ImageItem[]>([]);
+    const [musicList, setMusicList] = useState<MusicItem[]>([]);
+    const [eventsList, setEventsList] = useState<EventItem[]>([]);
+    const [videosList, setVideosList] = useState<VideoItem[]>([]);
+    const [concertsList, setConcertsList] = useState<ConcertItem[]>([]);
+    const [adsList, setAdsList] = useState<AdItem[]>([]);
+    const [promotionsList, setPromotionsList] = useState<PromotionItem[]>([]);
+    const [messagesList, setMessagesList] = useState<MessageItem[]>([]);
     const [activePromoId, setActivePromoId] = useState<string | null>(null);
     const [activeMusicId, setActiveMusicId] = useState<string | null>(null);
-    const [eventsInfo, setEventsInfo] = useState<any>({ title: 'Tour 2025', description: 'Prepárate para vivir la experiencia de Sweetjay en vivo. Nuevas fechas, nuevos shows y toda la energía del género urbano.', footer: 'Próximamente más fechas...' });
-    const [concertsInfo, setConcertsInfo] = useState<any>({ title: 'Vivo', description: 'Revive la intensidad y la energía pura de Sweetjay en sus presentaciones más recientes.' });
-    const [bioInfo, setBioInfo] = useState<any>({
+    const [eventsInfo, setEventsInfo] = useState<EventsInfo>({ title: 'Tour 2025', description: 'Prepárate para vivir la experiencia de Sweetjay en vivo. Nuevas fechas, nuevos shows y toda la energía del género urbano.', footer: 'Próximamente más fechas...' });
+    const [concertsInfo, setConcertsInfo] = useState<ConcertsInfo>({ title: 'Vivo', description: 'Revive la intensidad y la energía pura de Sweetjay en sus presentaciones más recientes.' });
+    const [bioInfo, setBioInfo] = useState<BioInfo>({
         title: 'Originario de Colima, 27 años',
-        content: `Sweetjay es un apasionado de la música y la expresión artística desde temprana edad.Inspirado por la necesidad de expresar sus sentimientos a través de melodías.Debuta con un EP **“MY ESSENCE”** producido por Yacknees en octubre del 2023.\n\nMiembro activo de ** Flow312 **, plataforma dedicada a promover el talento urbano colimense.Ha participado en ediciones exitosas de festivales urbanos y eventos locales de trap.`,
+        content: `Sweetjay es un apasionado de la música y la expresión artística desde temprana edad.Inspirado por la necesidad de expresar sus sentimientos a través de melodías.Debuta con un EP **"MY ESSENCE"** producido por Yacknees en octubre del 2023.\n\nMiembro activo de ** Flow312 **, plataforma dedicada a promover el talento urbano colimense.Ha participado en ediciones exitosas de festivales urbanos y eventos locales de trap.`,
         highlights: [
             { title: 'Logros', content: '• Composición "Dos Locos" - Grupo Cañaveral (2019)\n• Colaboración con Armando Gómez (Latin Grammy)\n• Ranking Top #10 Radio 91.7 (2024)\n• Participación en "Colimán" con Antiwa', iconType: 'star' },
             { title: 'Impacto', content: 'Difusión de artistas locales y organización de eventos como Elixir vol1/vol2 y Flow312 Forum DMT.', iconType: 'disc' }
@@ -42,7 +56,7 @@ export const Admin = () => {
     const authProcessed = React.useRef(false);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser: any) => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
         });
 
@@ -71,11 +85,12 @@ export const Admin = () => {
             window.localStorage.removeItem('emailForSignIn');
             setConfirmEmailNeeded(false);
             setMessage('¡Sesión iniciada con éxito!');
-        } catch (error: any) {
-            if (error.code === 'auth/invalid-action-code') {
+        } catch (error: unknown) {
+            if (error instanceof Error && 'code' in error && error.code === 'auth/invalid-action-code') {
                 setMessage('Error: El enlace expiró o ya fue usado. Vuelve al inicio y solicita uno nuevo.');
             } else {
-                setMessage('Error: ' + error.message);
+                const message = error instanceof Error ? error.message : 'Error desconocido';
+                setMessage('Error: ' + message);
             }
         } finally {
             setLoading(false);
@@ -137,13 +152,13 @@ export const Admin = () => {
         try {
             const settingsDocs = await getDocs(query(collection(db, 'settings')));
             const evInfo = settingsDocs.docs.find(d => d.id === 'eventsInfo');
-            if (evInfo) setEventsInfo(evInfo.data());
+            if (evInfo) setEventsInfo(evInfo.data() as unknown as EventsInfo);
 
             const concInfo = settingsDocs.docs.find(d => d.id === 'concertsInfo');
-            if (concInfo) setConcertsInfo(concInfo.data());
+            if (concInfo) setConcertsInfo(concInfo.data() as unknown as ConcertsInfo);
 
             const bInfo = settingsDocs.docs.find(d => d.id === 'bioInfo');
-            if (bInfo) setBioInfo(bInfo.data());
+            if (bInfo) setBioInfo(bInfo.data() as unknown as BioInfo);
         } catch (err) {
             console.error("Error fetching settings:", err);
         }
@@ -177,8 +192,9 @@ export const Admin = () => {
             await sendSignInLinkToEmail(auth, email, actionCodeSettings);
             window.localStorage.setItem('emailForSignIn', email);
             setMessage(`¡Enlace enviado! Revisa la bandeja de entrada de ${email} `);
-        } catch (error: any) {
-            setMessage('Error: ' + error.message);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Error desconocido';
+            setMessage('Error: ' + message);
         }
         setLoading(false);
     };
@@ -513,7 +529,7 @@ export const Admin = () => {
                     <div className="flex gap-4">
                         {/* Temporary Bypass Button for testing - REMOVE AFTER VERIFICATION */}
                         <button
-                            onClick={() => setUser({ email: 'test@sweetjay.com', uid: 'test-uid' })}
+                            onClick={() => setUser({ email: 'test@sweetjay.com', uid: 'test-uid', emailVerified: false } as User)}
                             className="text-[10px] text-gray-800 hover:text-gray-600"
                         >
                             [DEV BYPASS]
