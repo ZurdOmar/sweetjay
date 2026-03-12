@@ -2,8 +2,8 @@
 
 ## Proyecto: sweetjay
 **Fecha:** 2026-03-12
-**Archivos analizados:** 12
-**Líneas totales:** 3264
+**Archivos analizados:** 13
+**Líneas totales:** 3576
 
 ---
 
@@ -11,27 +11,27 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Archivos analizados | 12 |
-| Líneas de código | 3264 |
-| Promedio líneas/archivo | 272 |
-| Archivo más grande | Admin.tsx (1277 líneas) |
-| Cobertura de tipos | 88% |
+| Archivos analizados | 13 |
+| Líneas de código | 3576 |
+| Promedio líneas/archivo | 275 |
+| Archivo más grande | Admin.tsx (1295 líneas) |
+| Cobertura de tipos | 89% |
 
 ### Issues Encontrados
 
 | Severidad | Cantidad |
 |-----------|----------|
-| 🔴 Crítico | 25 |
-| 🟡 Mayor | 27 |
+| 🔴 Crítico | 24 |
+| 🟡 Mayor | 24 |
 | 🟢 Menor | 2 |
-| **Total** | **54** |
+| **Total** | **50** |
 
 ### Por Categoría
 
 | Categoría | Cantidad |
 |-----------|----------|
 | 🔒 Seguridad | 6 |
-| 🐛 Bugs | 46 |
+| 🐛 Bugs | 42 |
 | 👃 Code Smells | 2 |
 
 **Calificación:** 🔴 **C**
@@ -42,56 +42,42 @@
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:112`
+**Ubicación:** `src\components\Admin.tsx:129`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:112`
-**Problema:** `: any`
-**Solución:** Definir interfaces o tipos específicos
-
-
-### BUG-001: Uso de any en TypeScript
-**Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:121`
+**Ubicación:** `src\components\Admin.tsx:129`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
 
 ### SEC-001: Emails hardcodeados
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:178`
+**Ubicación:** `src\components\Admin.tsx:196`
 **Problema:** `'morentinomar@gmail.com'`
 **Solución:** Mover a variables de entorno o configuración
 
 
 ### SEC-001: Emails hardcodeados
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:178`
+**Ubicación:** `src\components\Admin.tsx:196`
 **Problema:** `'jeranmp@gmail.com'`
 **Solución:** Mover a variables de entorno o configuración
 
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:211`
+**Ubicación:** `src\components\Admin.tsx:229`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:244`
-**Problema:** `: any`
-**Solución:** Definir interfaces o tipos específicos
-
-
-### BUG-001: Uso de any en TypeScript
-**Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:257`
+**Ubicación:** `src\components\Admin.tsx:262`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
@@ -105,98 +91,105 @@
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:290`
+**Ubicación:** `src\components\Admin.tsx:293`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:294`
+**Ubicación:** `src\components\Admin.tsx:308`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:335`
+**Ubicación:** `src\components\Admin.tsx:312`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:346`
+**Ubicación:** `src\components\Admin.tsx:353`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:383`
+**Ubicación:** `src\components\Admin.tsx:364`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:389`
+**Ubicación:** `src\components\Admin.tsx:401`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:400`
+**Ubicación:** `src\components\Admin.tsx:407`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:406`
+**Ubicación:** `src\components\Admin.tsx:418`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:426`
+**Ubicación:** `src\components\Admin.tsx:424`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:432`
+**Ubicación:** `src\components\Admin.tsx:444`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:458`
+**Ubicación:** `src\components\Admin.tsx:450`
+**Problema:** `: any`
+**Solución:** Definir interfaces o tipos específicos
+
+
+### BUG-001: Uso de any en TypeScript
+**Severidad:** CRITICAL
+**Ubicación:** `src\components\Admin.tsx:476`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
 
 ### SEC-001: Emails hardcodeados
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:473`
+**Ubicación:** `src\components\Admin.tsx:491`
 **Problema:** `"tu@correo.com"`
 **Solución:** Mover a variables de entorno o configuración
 
 
 ### SEC-001: Emails hardcodeados
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:532`
+**Ubicación:** `src\components\Admin.tsx:550`
 **Problema:** `'test@sweetjay.com'`
 **Solución:** Mover a variables de entorno o configuración
 
 
 ### BUG-001: Uso de any en TypeScript
 **Severidad:** CRITICAL
-**Ubicación:** `src\components\Admin.tsx:727`
+**Ubicación:** `src\components\Admin.tsx:745`
 **Problema:** `: any`
 **Solución:** Definir interfaces o tipos específicos
 
@@ -221,83 +214,27 @@
 ### SMELL-001: Archivo muy grande
 **Severidad:** MAJOR
 **Ubicación:** `src\App.tsx:1`
-**Problema:** `Archivo tiene 926 líneas (máx: 500)`
+**Problema:** `Archivo tiene 927 líneas (máx: 500)`
 **Solución:** Dividir en componentes o módulos más pequeños
-
-
-### BUG-002: Console.log en producción
-**Severidad:** MAJOR
-**Ubicación:** `src\App.tsx:105`
-**Problema:** `console.error`
-**Solución:** Usar un logger condicional o remover
-
-
-### BUG-002: Console.log en producción
-**Severidad:** MAJOR
-**Ubicación:** `src\App.tsx:141`
-**Problema:** `console.error`
-**Solución:** Usar un logger condicional o remover
 
 
 ### SMELL-001: Archivo muy grande
 **Severidad:** MAJOR
 **Ubicación:** `src\components\Admin.tsx:1`
-**Problema:** `Archivo tiene 1277 líneas (máx: 500)`
+**Problema:** `Archivo tiene 1295 líneas (máx: 500)`
 **Solución:** Dividir en componentes o módulos más pequeños
 
 
-### BUG-002: Console.log en producción
-**Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:110`
-**Problema:** `console.log`
-**Solución:** Usar un logger condicional o remover
-
-
 ### BUG-003: Catch sin validación de error
 **Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:121`
-**Problema:** `catch (err: any)`
-**Solución:** Usar "unknown" y validar el error
-
-
-### BUG-002: Console.log en producción
-**Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:122`
-**Problema:** `console.error`
-**Solución:** Usar un logger condicional o remover
-
-
-### BUG-002: Console.log en producción
-**Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:146`
-**Problema:** `console.error`
-**Solución:** Usar un logger condicional o remover
-
-
-### BUG-002: Console.log en producción
-**Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:163`
-**Problema:** `console.error`
-**Solución:** Usar un logger condicional o remover
-
-
-### BUG-003: Catch sin validación de error
-**Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:211`
+**Ubicación:** `src\components\Admin.tsx:229`
 **Problema:** `catch (error: any)`
 **Solución:** Usar "unknown" y validar el error
 
 
 ### BUG-003: Catch sin validación de error
 **Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:244`
-**Problema:** `catch (error: any)`
-**Solución:** Usar "unknown" y validar el error
-
-
-### BUG-003: Catch sin validación de error
-**Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:257`
+**Ubicación:** `src\components\Admin.tsx:262`
 **Problema:** `catch (error: any)`
 **Solución:** Usar "unknown" y validar el error
 
@@ -311,51 +248,44 @@
 
 ### BUG-003: Catch sin validación de error
 **Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:346`
-**Problema:** `catch (error: any)`
-**Solución:** Usar "unknown" y validar el error
-
-
-### BUG-002: Console.log en producción
-**Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:366`
-**Problema:** `console.warn`
-**Solución:** Usar un logger condicional o remover
-
-
-### BUG-003: Catch sin validación de error
-**Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:383`
+**Ubicación:** `src\components\Admin.tsx:293`
 **Problema:** `catch (error: any)`
 **Solución:** Usar "unknown" y validar el error
 
 
 ### BUG-003: Catch sin validación de error
 **Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:400`
+**Ubicación:** `src\components\Admin.tsx:364`
 **Problema:** `catch (error: any)`
 **Solución:** Usar "unknown" y validar el error
 
 
 ### BUG-003: Catch sin validación de error
 **Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:426`
+**Ubicación:** `src\components\Admin.tsx:401`
 **Problema:** `catch (error: any)`
 **Solución:** Usar "unknown" y validar el error
 
 
 ### BUG-003: Catch sin validación de error
 **Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:458`
+**Ubicación:** `src\components\Admin.tsx:418`
 **Problema:** `catch (error: any)`
 **Solución:** Usar "unknown" y validar el error
 
 
-### BUG-002: Console.log en producción
+### BUG-003: Catch sin validación de error
 **Severidad:** MAJOR
-**Ubicación:** `src\components\Admin.tsx:971`
-**Problema:** `console.log`
-**Solución:** Usar un logger condicional o remover
+**Ubicación:** `src\components\Admin.tsx:444`
+**Problema:** `catch (error: any)`
+**Solución:** Usar "unknown" y validar el error
+
+
+### BUG-003: Catch sin validación de error
+**Severidad:** MAJOR
+**Ubicación:** `src\components\Admin.tsx:476`
+**Problema:** `catch (error: any)`
+**Solución:** Usar "unknown" y validar el error
 
 
 ### BUG-002: Console.log en producción
@@ -407,19 +337,61 @@
 **Solución:** Usar un logger condicional o remover
 
 
+### BUG-002: Console.log en producción
+**Severidad:** MAJOR
+**Ubicación:** `src\utils\validation.ts:69`
+**Problema:** `console.warn`
+**Solución:** Usar un logger condicional o remover
+
+
+### BUG-002: Console.log en producción
+**Severidad:** MAJOR
+**Ubicación:** `src\utils\validation.ts:269`
+**Problema:** `console.log`
+**Solución:** Usar un logger condicional o remover
+
+
+### BUG-002: Console.log en producción
+**Severidad:** MAJOR
+**Ubicación:** `src\utils\validation.ts:274`
+**Problema:** `console.log`
+**Solución:** Usar un logger condicional o remover
+
+
+### BUG-002: Console.log en producción
+**Severidad:** MAJOR
+**Ubicación:** `src\utils\validation.ts:279`
+**Problema:** `console.warn`
+**Solución:** Usar un logger condicional o remover
+
+
+### BUG-002: Console.log en producción
+**Severidad:** MAJOR
+**Ubicación:** `src\utils\validation.ts:284`
+**Problema:** `console.error`
+**Solución:** Usar un logger condicional o remover
+
+
+### BUG-002: Console.log en producción
+**Severidad:** MAJOR
+**Ubicación:** `src\utils\validation.ts:289`
+**Problema:** `console.info`
+**Solución:** Usar un logger condicional o remover
+
+
 
 ## ℹ️ Issues Menores
 
 ### SEC-004: localStorage sin encriptar
 **Severidad:** MINOR
-**Ubicación:** `src\components\Admin.tsx:66`
+**Ubicación:** `src\components\Admin.tsx:83`
 **Problema:** `localStorage.getItem('emailForSignIn')`
 **Solución:** Encriptar datos sensibles antes de guardar
 
 
 ### SEC-004: localStorage sin encriptar
 **Severidad:** MINOR
-**Ubicación:** `src\components\Admin.tsx:193`
+**Ubicación:** `src\components\Admin.tsx:211`
 **Problema:** `localStorage.setItem('emailForSignIn', email)`
 **Solución:** Encriptar datos sensibles antes de guardar
 
@@ -435,25 +407,25 @@ _Ver sección de métricas para detalles_
 ## ✅ Plan de Acción Recomendado
 
 ### Prioridad 1: Seguridad (Esta semana)
-- [ ] **SEC-004** en `src\components\Admin.tsx:66` - localStorage sin encriptar
-- [ ] **SEC-001** en `src\components\Admin.tsx:178` - Emails hardcodeados
-- [ ] **SEC-001** en `src\components\Admin.tsx:178` - Emails hardcodeados
-- [ ] **SEC-004** en `src\components\Admin.tsx:193` - localStorage sin encriptar
-- [ ] **SEC-001** en `src\components\Admin.tsx:473` - Emails hardcodeados
+- [ ] **SEC-004** en `src\components\Admin.tsx:83` - localStorage sin encriptar
+- [ ] **SEC-001** en `src\components\Admin.tsx:196` - Emails hardcodeados
+- [ ] **SEC-001** en `src\components\Admin.tsx:196` - Emails hardcodeados
+- [ ] **SEC-004** en `src\components\Admin.tsx:211` - localStorage sin encriptar
+- [ ] **SEC-001** en `src\components\Admin.tsx:491` - Emails hardcodeados
 
 ### Prioridad 2: Bugs Críticos (Esta semana)
-- [ ] **BUG-001** en `src\components\Admin.tsx:112` - Uso de any en TypeScript
-- [ ] **BUG-001** en `src\components\Admin.tsx:112` - Uso de any en TypeScript
-- [ ] **BUG-001** en `src\components\Admin.tsx:121` - Uso de any en TypeScript
-- [ ] **BUG-001** en `src\components\Admin.tsx:211` - Uso de any en TypeScript
-- [ ] **BUG-001** en `src\components\Admin.tsx:244` - Uso de any en TypeScript
+- [ ] **BUG-001** en `src\components\Admin.tsx:129` - Uso de any en TypeScript
+- [ ] **BUG-001** en `src\components\Admin.tsx:129` - Uso de any en TypeScript
+- [ ] **BUG-001** en `src\components\Admin.tsx:229` - Uso de any en TypeScript
+- [ ] **BUG-001** en `src\components\Admin.tsx:262` - Uso de any en TypeScript
+- [ ] **BUG-001** en `src\components\Admin.tsx:275` - Uso de any en TypeScript
 
 ### Prioridad 3: Bugs Mayores (Próxima semana)
-- [ ] **BUG-002** en `src\App.tsx:105` - Console.log en producción
-- [ ] **BUG-002** en `src\App.tsx:141` - Console.log en producción
-- [ ] **BUG-002** en `src\components\Admin.tsx:110` - Console.log en producción
-- [ ] **BUG-003** en `src\components\Admin.tsx:121` - Catch sin validación de error
-- [ ] **BUG-002** en `src\components\Admin.tsx:122` - Console.log en producción
+- [ ] **BUG-003** en `src\components\Admin.tsx:229` - Catch sin validación de error
+- [ ] **BUG-003** en `src\components\Admin.tsx:262` - Catch sin validación de error
+- [ ] **BUG-003** en `src\components\Admin.tsx:275` - Catch sin validación de error
+- [ ] **BUG-003** en `src\components\Admin.tsx:293` - Catch sin validación de error
+- [ ] **BUG-003** en `src\components\Admin.tsx:364` - Catch sin validación de error
 
 ### Prioridad 4: Code Smells (Este mes)
 - [ ] **SMELL-001** en `src\App.tsx:1` - Archivo muy grande
@@ -473,4 +445,4 @@ _Ver sección de métricas para detalles_
 ---
 
 *Reporte generado por Code Audit Skill v1.0.0*
-*2026-03-12T18:53:47.486Z*
+*2026-03-12T19:23:49.233Z*

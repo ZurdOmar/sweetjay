@@ -26,6 +26,7 @@ import type {
   Promotion,
   ContactStatus
 } from './types/App';
+import { logger } from './utils/validation';
 
 function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObject<MusicPlayerHandle | null>, showIntro: boolean }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -102,7 +103,7 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
           setFirebaseBioInfo(bInfo.data() as unknown as BioInfo);
         }
       } catch (error) {
-        console.error("Error fetching dynamic data:", error);
+        logger.error("Error fetching dynamic data:", error);
       }
     };
 
@@ -138,7 +139,7 @@ function MainSite({ musicPlayerRef, showIntro }: { musicPlayerRef: React.RefObje
       setContactMessage('');
       setTimeout(() => setContactStatus(''), 5000);
     } catch (error) {
-      console.error("Error sending message:", error);
+      logger.error("Error sending message:", error);
       setContactStatus('error');
     }
   };

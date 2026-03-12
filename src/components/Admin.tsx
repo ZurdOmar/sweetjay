@@ -18,6 +18,7 @@ import type {
   EventsInfo,
   ConcertsInfo
 } from '../types/Admin';
+import { validateUser, logger } from '../utils/validation';
 
 export const Admin = () => {
     const [user, setUser] = useState<User | null>(null);
@@ -57,7 +58,23 @@ export const Admin = () => {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
+            try {
+                if (currentUser) {
+                    const validatedUser = validateUser({
+                        uid: currentUser.uid,
+                        email: currentUser.email,
+                        emailVerified: currentUser.emailVerified,
+                        displayName: currentUser.displayName,
+                        photoURL: currentUser.photoURL,
+                    });
+                    setUser(validatedUser);
+                } else {
+                    setUser(null);
+                }
+            } catch (error) {
+                logger.error('Error validando usuario:', error);
+                setUser(null);
+            }
         });
 
         // Check if the user is returning from the email link
@@ -107,7 +124,7 @@ export const Admin = () => {
                 const q = query(collection(db, colName));
                 const snapshot = await getDocs(q);
                 const docsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log(`Colección ${colName} obtenida con ${docsData.length} registros: `, docsData);
+                logger.log(`Colección ${colName} obtenida con ${docsData.length} registros: `, docsData);
                 // Sort client-side
                 docsData.sort((a: any, b: any) => {
                     if (colName === 'carousel' && (a.order !== undefined || b.order !== undefined)) {
@@ -118,9 +135,10 @@ export const Admin = () => {
                     return dateB - dateA; // Descending
                 });
                 setter(docsData);
-            } catch (err: any) {
-                console.error(`Error crítico al cargar la colección ${colName}: `, err);
-                setMessage((prev) => prev ? `${prev} | Error en ${colName}: ${err.message} ` : `Error al cargar ${colName}: ${err.message} `);
+            } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : 'Error desconocido';
+                logger.error(`Error crítico al cargar la colección ${colName}: `, message);
+                setMessage((prev) => prev ? `${prev} | Error en ${colName}: ${message} ` : `Error al cargar ${colName}: ${message} `);
             }
         };
 
@@ -143,7 +161,7 @@ export const Admin = () => {
                     const activeMusicDoc = snap.docs.find(d => d.id === 'activeMusic');
                     if (activeMusicDoc) setActiveMusicId(activeMusicDoc.data().id);
                 } catch (err) {
-                    console.error('Error fetching settings:', err);
+                    logger.error('Error fetching settings:', err);
                 }
             })()
         ]);
@@ -160,7 +178,7 @@ export const Admin = () => {
             const bInfo = settingsDocs.docs.find(d => d.id === 'bioInfo');
             if (bInfo) setBioInfo(bInfo.data() as unknown as BioInfo);
         } catch (err) {
-            console.error("Error fetching settings:", err);
+            logger.error("Error fetching settings:", err);
         }
 
         setLoadingData(false);
@@ -363,7 +381,7 @@ export const Admin = () => {
                     const fileRef = ref(storage, fileUrl);
                     await deleteObject(fileRef);
                 } catch (storageErr) {
-                    console.warn("Storage deletion error (file might already be deleted):", storageErr);
+                    logger.warn("Storage deletion error (file might already be deleted):", storageErr);
                 }
             }
 
@@ -968,7 +986,7 @@ export const Admin = () => {
                         <h2 className="text-2xl font-bold text-white">Gestionar Contenido Activo</h2>
                         <button
                             onClick={() => {
-                                console.log("Manual refresh requested...");
+                                logger.log("Manual refresh requested...");
                                 refreshData();
                             }}
                             disabled={loadingData}

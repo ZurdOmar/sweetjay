@@ -1,1 +1,1 @@
-feat: Add documentation and audit tools  
+fix: Reemplazar any con tipos espec¡ficos (Auditor¡a SonarQube) - Mejora de 68 a 54 issues  
