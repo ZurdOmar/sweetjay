@@ -2,19 +2,51 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink } from 'lucide-react';
 
+/**
+ * Props del componente PromotionModal
+ */
 interface PromotionModalProps {
+    /**
+     * Datos de la promoción activa
+     */
     promotion: {
-        url: string;
-        link?: string;
-        name?: string;
+        url: string;        // URL de la imagen de la promoción
+        link?: string;      // Link externo opcional al hacer click
+        name?: string;      // Nombre de la promoción
     } | null;
+    /**
+     * Retraso en milisegundos antes de mostrar el modal (default: 1000ms)
+     */
     delay?: number;
+    /**
+     * Controla si el modal debe mostrarse (default: true)
+     */
     trigger?: boolean;
 }
 
+/**
+ * Componente PromotionModal
+ * 
+ * Modal emergente que muestra promociones activas configuradas por el admin.
+ * Se abre automáticamente al cargar el sitio (después de la intro).
+ * 
+ * Features:
+ * - Se abre automáticamente al detectar una promoción activa
+ * - Espera a que la imagen cargue antes de mostrar
+ * - Botón opcional con link externo
+ * - Botón de cerrar
+ * - Animaciones de entrada/salida con Framer Motion
+ */
 export const PromotionModal: React.FC<PromotionModalProps> = ({ promotion, delay = 1000, trigger = true }) => {
     const [isOpen, setIsOpen] = useState(false);
 
+    /**
+     * Controla la apertura del modal
+     * 
+     * 1. Verifica que haya promoción y que el trigger esté activo
+     * 2. Precarga la imagen para evitar parpadeos
+     * 3. Abre el modal después de un retraso
+     */
     useEffect(() => {
         console.log("PromotionModal Effect:", { promotion: !!promotion, trigger, isOpen });
         if (!promotion || !trigger) return;
@@ -28,7 +60,7 @@ export const PromotionModal: React.FC<PromotionModalProps> = ({ promotion, delay
                 setTimeout(() => {
                     console.log("PromotionModal Opening...");
                     setIsOpen(true);
-                }, 300); // Reduced delay for better UX after click
+                }, 300);
             }
         };
 
@@ -37,6 +69,9 @@ export const PromotionModal: React.FC<PromotionModalProps> = ({ promotion, delay
         };
     }, [promotion, delay, trigger]);
 
+    /**
+     * Cierra el modal
+     */
     const handleClose = () => {
         setIsOpen(false);
     };

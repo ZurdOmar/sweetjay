@@ -1,9 +1,28 @@
 import { motion } from 'framer-motion';
 
+/**
+ * Props del componente Intro
+ */
 interface IntroProps {
+    /**
+     * Función que se llama cuando el usuario hace click en "Entrar"
+     * para salir de la intro y mostrar el sitio principal
+     */
     onEnter: () => void;
 }
 
+/**
+ * Componente Intro
+ * 
+ * Pantalla de bienvenida que se muestra antes del sitio principal.
+ * Incluye el logo animado y un botón para entrar al sitio.
+ * 
+ * Features:
+ * - Animación de entrada del logo (scale + opacity)
+ * - Botón "Entrar" con efectos hover
+ * - Texto descriptivo en la parte inferior
+ * - Se desvanece al salir (exit animation)
+ */
 export function Intro({ onEnter }: IntroProps) {
     return (
         <motion.div

@@ -2,17 +2,37 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, ExternalLink, Megaphone } from 'lucide-react';
 
+/**
+ * Props del componente PromotionBanner
+ */
 interface PromotionBannerProps {
+    /**
+     * Datos de la promoción activa
+     */
     promotion: {
-        url: string;
-        link?: string;
-        name?: string;
+        url: string;        // URL de la imagen de la promoción
+        link?: string;      // Link externo opcional
+        name?: string;      // Nombre de la promoción
     } | null;
 }
 
+/**
+ * Componente PromotionBanner
+ * 
+ * Banner fijo en la parte inferior que muestra promociones activas.
+ * Menos intrusivo que el modal, permite al usuario cerrarlo fácilmente.
+ * 
+ * Features:
+ * - Fijo en la parte inferior de la pantalla
+ * - Icono de megáfono para indicar promoción
+ * - Botón opcional con link externo
+ * - Botón de cerrar
+ * - Animación de entrada desde abajo
+ */
 export const PromotionBanner: React.FC<PromotionBannerProps> = ({ promotion }) => {
     const [isVisible, setIsVisible] = useState(true);
 
+    // No renderiza si no hay promoción o si el usuario lo cerró
     if (!promotion || !promotion.url || !isVisible) return null;
 
     return (

@@ -3,16 +3,36 @@ import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
+/**
+ * Interfaz para controlar el MusicPlayer desde el componente padre
+ */
 export interface MusicPlayerHandle {
     forcePlay: () => void;
 }
 
+/**
+ * Componente MusicPlayer
+ * 
+ * Reproductor de música fijo en la esquina inferior derecha.
+ * Se sincroniza con Firebase para reproducir la canción activa configurada por el admin.
+ * 
+ * Features:
+ * - Reproducción en loop
+ * - Control de play/pause
+ * - Control de mute/volumen
+ * - Muestra nombre de la canción actual
+ * - Fallback a "El Don" si no hay canción activa
+ */
 export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
+    // Estado del reproductor
     const [isPlaying, setIsPlaying] = useState(false);
-    const [isMuted, setIsMuted] = useState(false); // Start unmuted because we have a user gesture now
+    const [isMuted, setIsMuted] = useState(false);
     const [activeMusic, setActiveMusic] = useState<any>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
+    /**
+     * Carga la canción activa desde Firebase al montar el componente
+     */
     useEffect(() => {
         const fetchMusic = async () => {
             try {
@@ -28,6 +48,10 @@ export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
         fetchMusic();
     }, []);
 
+    /**
+     * Expone el método forcePlay para que el componente padre pueda forzar la reproducción
+     * (usado después de la intro)
+     */
     useImperativeHandle(ref, () => ({
         forcePlay: () => {
             const audio = audioRef.current;
@@ -39,6 +63,9 @@ export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
         }
     }));
 
+    /**
+     * Configuración inicial del audio
+     */
     useEffect(() => {
         const audio = audioRef.current;
         if (!audio) return;
@@ -52,6 +79,9 @@ export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
 
     }, []);
 
+    /**
+     * Alterna entre play y pause
+     */
     const togglePlay = () => {
         const audio = audioRef.current;
         if (!audio) return;
@@ -65,6 +95,9 @@ export const MusicPlayer = forwardRef<MusicPlayerHandle>((_props, ref) => {
         }
     };
 
+    /**
+     * Activa o desactiva el mute
+     */
     const toggleMute = () => {
         const audio = audioRef.current;
         if (!audio) return;

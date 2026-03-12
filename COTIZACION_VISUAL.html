@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotización - Sitio Web Profesional</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #2563eb;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #2563eb;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .package {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .package:hover {
+            border-color: #2563eb;
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.1);
+        }
+        
+        .package.popular {
+            border-color: #2563eb;
+            background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+            position: relative;
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background: #2563eb;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .package h3 {
+            color: #2563eb;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        
+        .price {
+            font-size: 2.5em;
+            color: #1e40af;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        
+        .price span {
+            font-size: 0.4em;
+            color: #666;
+            font-weight: normal;
+        }
+        
+        .features {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .features li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .profile-item {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .profile-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .comparison-table th {
+            background: #eff6ff;
+            color: #2563eb;
+            font-weight: bold;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f9fafb;
+        }
+        
+        .cta-box {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .cta-box h3 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+        
+        .cta-box .bonus {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .signature-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 2px solid #e5e7eb;
+        }
+        
+        .signature-field {
+            margin-top: 60px;
+        }
+        
+        .signature-line {
+            border-top: 2px solid #333;
+            margin-top: 40px;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin: 30px 0;
+        }
+        
+        .timeline-item {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .timeline-item:before {
+            content: "●";
+            position: absolute;
+            left: -30px;
+            color: #2563eb;
+            font-size: 1.2em;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+            
+            .package {
+                page-break-inside: avoid;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .signature-box {
+                grid-template-columns: 1fr;
+            }
+            
+            .price {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚀 Cotización de Desarrollo Web</h1>
+            <p>Sitio Web Profesional con Panel de Administración</p>
+            <p style="margin-top: 10px; color: #999;">Marzo 2026</p>
+        </div>
+
+        <!-- Introducción -->
+        <div class="info-box">
+            <h2>👋 ¡Gracias por tu interés!</h2>
+            <p>Esta cotización incluye todo lo que necesitas para tener una presencia profesional en internet, ya seas médico, psicólogo, artista o empresario.</p>
+        </div>
+
+        <!-- Perfiles -->
+        <h2 style="margin-top: 40px;">🎯 Perfecto para:</h2>
+        <div class="profile-grid">
+            <div class="profile-item">
+                <div class="profile-icon">🩺</div>
+                <strong>Doctores</strong>
+            </div>
+            <div class="profile-item">
+                <div class="profile-icon">🧠</div>
+                <strong>Psicólogos</strong>
+            </div>
+            <div class="profile-item">
+                <div class="profile-icon">🎵</div>
+                <strong>Artistas</strong>
+            </div>
+            <div class="profile-item">
+                <div class="profile-icon">💼</div>
+                <strong>Profesionistas</strong>
+            </div>
+            <div class="profile-item">
+                <div class="profile-icon">🏢</div>
+                <strong>Empresas</strong>
+            </div>
+        </div>
+
+        <!-- Paquetes -->
+        <h2 style="margin-top: 40px;">📦 Paquetes Disponibles</h2>
+
+        <!-- Paquete 1 -->
+        <div class="package">
+            <h3>📄 Paquete Esencial</h3>
+            <p>Ideal para presencia básica en internet</p>
+            <div class="price">$18,000 - $25,000 MXN</div>
+            <ul class="features">
+                <li>Landing page de una página</li>
+                <li>Sección de inicio, servicios, sobre mí, contacto</li>
+                <li>Galería de imágenes (8 fotos)</li>
+                <li>Formulario de contacto funcional</li>
+                <li>Enlaces a redes sociales</li>
+                <li>Diseño responsive (móvil, tablet, desktop)</li>
+                <li>Botón de WhatsApp</li>
+                <li>Hosting incluido primer año</li>
+                <li>Certificado SSL (candado de seguridad)</li>
+                <li>2 rondas de revisiones</li>
+                <li>30 días de garantía</li>
+            </ul>
+            <p><strong>Tiempo de entrega:</strong> 2-3 semanas</p>
+        </div>
+
+        <!-- Paquete 2 -->
+        <div class="package popular">
+            <div class="popular-badge">⭐ MÁS POPULAR</div>
+            <h3>⭐ Paquete Profesional</h3>
+            <p>Para quienes necesitan control total de su contenido</p>
+            <div class="price">$35,000 - $45,000 MXN</div>
+            <p style="color: #666; font-size: 0.9em;">Incluye todo el Paquete Esencial, más:</p>
+            <ul class="features">
+                <li><strong>Panel de Administración Autoadministrable</strong></li>
+                <li>Subir/editar/eliminar imágenes y servicios</li>
+                <li>Gestionar testimonios y ver mensajes</li>
+                <li><strong>Integración con Calendly</strong> (Doctores/Psicólogos)</li>
+                <li>Enlace a Google Calendar</li>
+                <li>Reproductor de música (Artistas)</li>
+                <li>Subir videos (YouTube o archivos)</li>
+                <li>Gestionar eventos/conciertos</li>
+                <li>SEO básico optimizado</li>
+                <li>Google Analytics integrado</li>
+                <li>Backup mensual (3 meses)</li>
+                <li>3 rondas de revisiones</li>
+                <li>Capacitación completa (2 horas)</li>
+                <li>60 días de garantía</li>
+            </ul>
+            <p><strong>Tiempo de entrega:</strong> 4-5 semanas</p>
+        </div>
+
+        <!-- Paquete 3 -->
+        <div class="package">
+            <h3>🏆 Paquete Empresarial</h3>
+            <p>Solución completa con funcionalidades avanzadas</p>
+            <div class="price">$55,000 - $75,000 MXN</div>
+            <p style="color: #666; font-size: 0.9em;">Incluye todo el Paquete Profesional, más:</p>
+            <ul class="features">
+                <li><strong>Chatbot elemental</strong> integrado</li>
+                <li>Sistema de Citas Avanzado con recordatorios</li>
+                <li>Blog/Noticias autoadministrable</li>
+                <li>Newsletter/Email Marketing</li>
+                <li>Multi-idioma (Español e Inglés)</li>
+                <li>SEO avanzado</li>
+                <li>Google My Business integration</li>
+                <li>Velocidad optimizada (90+ en PageSpeed)</li>
+                <li>CDN (Content Delivery Network)</li>
+                <li>4 rondas de revisiones</li>
+                <li>Capacitación (3 horas) + videos tutoriales</li>
+                <li>90 días de garantía</li>
+                <li>3 meses de soporte incluido</li>
+            </ul>
+            <p><strong>Tiempo de entrega:</strong> 6-8 semanas</p>
+        </div>
+
+        <!-- Comparativa de Hosting -->
+        <h2 style="margin-top: 40px;">🌐 Costos de Hosting Anuales</h2>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Concepto</th>
+                    <th>Firebase Gratis</th>
+                    <th>Firebase Pago</th>
+                    <th>SiteGround</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Hosting</strong></td>
+                    <td>$0 MXN/año</td>
+                    <td>~$120 MXN/año</td>
+                    <td>~$2,400 MXN/año</td>
+                </tr>
+                <tr>
+                    <td><strong>Dominio</strong></td>
+                    <td>~$350 MXN/año</td>
+                    <td>~$350 MXN/año</td>
+                    <td>~$350 MXN/año</td>
+                </tr>
+                <tr>
+                    <td><strong>SSL</strong></td>
+                    <td>✅ Gratis</td>
+                    <td>✅ Gratis</td>
+                    <td>✅ Gratis</td>
+                </tr>
+                <tr>
+                    <td><strong>Email</strong></td>
+                    <td>❌ (usa Gmail)</td>
+                    <td>❌ (usa Gmail)</td>
+                    <td>✅ Incluido</td>
+                </tr>
+                <tr>
+                    <td><strong>TOTAL/año</strong></td>
+                    <td><strong>~$350 MXN</strong></td>
+                    <td><strong>~$470 MXN</strong></td>
+                    <td><strong>~$2,750 MXN</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Bonus -->
+        <div class="cta-box">
+            <h3>🎁 Bonus Especiales</h3>
+            <p>Si contratas antes de 30 días de recibida esta cotización:</p>
+            <div class="bonus">
+                <p>✅ Logo en alta resolución ($3,000 MXN)</p>
+                <p>✅ Optimización SEO básica ($2,500 MXN)</p>
+                <p>✅ Google My Business ($1,500 MXN)</p>
+                <p>✅ 1 mes de mantenimiento ($3,000 MXN)</p>
+                <p style="margin-top: 15px; font-size: 1.3em;"><strong>¡Ahorras $10,000 MXN!</strong></p>
+            </div>
+        </div>
+
+        <!-- Proceso -->
+        <h2 style="margin-top: 40px;">📅 Proceso de Trabajo</h2>
+        <div class="timeline">
+            <div class="timeline-item"><strong>Semana 1-2:</strong> Descubrimiento y Diseño (reunión, mockups, aprobación)</div>
+            <div class="timeline-item"><strong>Semana 3-4:</strong> Desarrollo (Frontend + Backend)</div>
+            <div class="timeline-item"><strong>Semana 5:</strong> Pruebas y Carga de Contenido</div>
+            <div class="timeline-item"><strong>Semana 6:</strong> Entrega y Capacitación</div>
+        </div>
+
+        <!-- Forma de Pago -->
+        <h2 style="margin-top: 40px;">💳 Forma de Pago</h2>
+        <div class="info-box">
+            <p><strong>Opción A:</strong> 50% anticipo, 50% entrega</p>
+            <p><strong>Opción B:</strong> 40% anticipo, 30% avance, 30% entrega</p>
+        </div>
+
+        <!-- Firma -->
+        <div class="signature-box">
+            <div>
+                <h4>Cliente</h4>
+                <div class="signature-field">
+                    <div class="signature-line"></div>
+                    <p>Nombre y firma</p>
+                </div>
+            </div>
+            <div>
+                <h4>Desarrollador</h4>
+                <div class="signature-field">
+                    <div class="signature-line"></div>
+                    <p>Nombre y firma</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contacto -->
+        <div style="margin-top: 40px; text-align: center; padding: 20px; background: #f9fafb; border-radius: 8px;">
+            <h3 style="color: #2563eb;">¿Tienes dudas o quieres contratar?</h3>
+            <p style="margin: 15px 0;">
+                <strong>Email:</strong> tu-email@ejemplo.com<br>
+                <strong>Teléfono/WhatsApp:</strong> [tu-número]<br>
+                <strong>Horario:</strong> Lunes a Viernes, 9:00 AM - 6:00 PM
+            </p>
+        </div>
+
+        <p style="text-align: center; margin-top: 30px; color: #999; font-size: 0.9em;">
+            Esta cotización es válida por 30 días a partir de la fecha de emisión.
+        </p>
+    </div>
+</body>
+</html>

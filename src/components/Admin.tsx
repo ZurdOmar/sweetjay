@@ -343,10 +343,12 @@ export const Admin = () => {
 
             // If it's a file stored in Firebase Storage (not just a YouTube text link), delete it from Storage
             if (fileUrl && fileUrl.includes('firebasestorage')) {
-                // Extract file path from url or assume typical format by keeping a reference
-                // Firebase URLs look like https://firebasestorage.googleapis.com/.../o/folder%2Ffilename?alt=...
-                const fileRef = ref(storage, fileUrl);
-                await deleteObject(fileRef);
+                try {
+                    const fileRef = ref(storage, fileUrl);
+                    await deleteObject(fileRef);
+                } catch (storageErr) {
+                    console.warn("Storage deletion error (file might already be deleted):", storageErr);
+                }
             }
 
             // If we are deleting a promotion and it is the currently active one, clear the active promotion setting
@@ -790,19 +792,30 @@ export const Admin = () => {
                                 <input type="file" className="hidden" accept="video/*" onChange={(e) => handleUpload(e, 'concerts')} />
                             </label>
 
-                            {/* Bajar Video Button */}
-                            <button
-                                onClick={() => {
-                                    if (concertsList.length > 0) {
-                                        handleDelete('concerts', concertsList[0].id, concertsList[0].url);
-                                    }
-                                }}
-                                disabled={concertsList.length === 0}
-                                className={`font-bold px-4 py-2 rounded-lg transition-colors border flex items-center justify-center w-full ${concertsList.length > 0 ? 'bg-red-600/20 hover:bg-red-600/40 text-red-500 border-red-500/30' : 'bg-white/5 text-gray-600 border-white/5 cursor-not-allowed'}`}
-                                title={concertsList.length > 0 ? "Eliminar este video" : "Sube un video para poder bajarlo"}
-                            >
-                                <Trash2 size={16} className="mr-2" /> Bajar Video
-                            </button>
+                            {/* Lista de Videos Subidos */}
+                            {concertsList.length > 0 ? (
+                                <div className="w-full flex flex-col gap-2 mt-2 mb-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                                    {concertsList.map((video) => (
+                                        <div key={video.id} className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg p-2 group">
+                                            <div className="flex items-center gap-2 overflow-hidden">
+                                                <Youtube size={16} className="text-gray-400 flex-shrink-0" />
+                                                <span className="text-xs text-gray-300 truncate" title={video.name || 'Video'}>
+                                                    {video.name || 'Video'}
+                                                </span>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDelete('concerts', video.id, video.url)}
+                                                className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-1.5 rounded-lg transition-colors"
+                                                title="Eliminar este video"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-xs text-gray-500 italic mb-2 mt-2">No hay videos subidos.</div>
+                            )}
 
                             {/* Enable/Disable Section */}
                             <button
